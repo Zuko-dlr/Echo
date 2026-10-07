@@ -1,0 +1,26 @@
+# Supprime une branche du dépôt (onglet Actions → « Supprimer une branche » → Run workflow → nom de la branche).
+name: Supprimer une branche
+
+on:
+  workflow_dispatch:
+    inputs:
+      branche:
+        description: "Nom de la branche à supprimer (jamais main)"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  supprimer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Supprimer la branche
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCHE: ${{ inputs.branche }}
+        run: |
+          [ "$BRANCHE" != "main" ] || { echo "Refus : on ne supprime pas main."; exit 1; }
+          gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${BRANCHE}"
+          echo "Branche « $BRANCHE » supprimée."
