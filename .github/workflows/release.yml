@@ -1,0 +1,49 @@
+# Publie une version d'Écho : compile sur un Mac de GitHub, fabrique l'archive et crée la release.
+# Lancement à la main (onglet Actions → « Publier une version » → Run workflow).
+name: Publier une version
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compiler Echo.app
+        run: ./build.sh
+
+      - name: Fabriquer l'archive et la somme de contrôle
+        id: pack
+        run: |
+          version=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" Info.plist)
+          mkdir -p dist
+          zip="Echo-${version}-macOS-arm64.zip"
+          ditto -c -k --keepParent build/Echo.app "dist/$zip"
+          (cd dist && shasum -a 256 "$zip" > "$zip.sha256")
+          cat "dist/$zip.sha256"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "zip=$zip" >> "$GITHUB_OUTPUT"
+
+      - name: Créer la release sur GitHub
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          v="${{ steps.pack.outputs.version }}"
+          tag="v${v}.0"
+          notes="docs/RELEASE-${v}.0.md"
+          [ -f "$notes" ] || { printf '## Écho %s.0\n' "$v" > /tmp/notes.md; notes=/tmp/notes.md; }
+          # somme de contrôle écrite dans le texte de la release, comme pour la 1.0
+          sum=$(cut -d' ' -f1 "dist/${{ steps.pack.outputs.zip }}.sha256")
+          sed "s|voir le fichier \`.*\.sha256\` joint|\`$sum\`|" "$notes" > /tmp/notes-final.md
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" dist/* --clobber
+            gh release edit "$tag" --notes-file /tmp/notes-final.md
+          else
+            gh release create "$tag" dist/* --title "Écho ${v}.0" --notes-file /tmp/notes-final.md --target "$GITHUB_SHA"
+          fi
+          echo "Release $tag publiée : https://github.com/${GITHUB_REPOSITORY}/releases/tag/$tag"
