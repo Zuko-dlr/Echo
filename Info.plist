@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleName</key><string>Verre</string>
+	<key>CFBundleDisplayName</key><string>Verre</string>
+	<key>CFBundleIdentifier</key><string>local.verre.app</string>
+	<key>CFBundleExecutable</key><string>Verre</string>
+	<key>CFBundlePackageType</key><string>APPL</string>
+	<key>CFBundleShortVersionString</key><string>1.0</string>
+	<key>CFBundleVersion</key><string>1</string>
+	<key>CFBundleIconFile</key><string>AppIcon</string>
+	<key>CFBundleDevelopmentRegion</key><string>fr</string>
+	<key>LSMinimumSystemVersion</key><string>14.0</string>
+	<key>LSApplicationCategoryType</key><string>public.app-category.music</string>
+	<key>NSHighResolutionCapable</key><true/>
+	<key>NSHumanReadableCopyright</key><string>Films et séries : données et images TMDB. Ce produit utilise l’API TMDB mais n’est ni approuvé ni certifié par TMDB.</string>
+	<key>NSDownloadsFolderUsageDescription</key><string>Verre cherche la musique et les vidéos que vous avez téléchargées.</string>
+	<key>NSDocumentsFolderUsageDescription</key><string>Verre lit la musique et les vidéos des dossiers que vous lui indiquez.</string>
+	<key>NSDesktopFolderUsageDescription</key><string>Verre lit la musique et les vidéos des dossiers que vous lui indiquez.</string>
+	<key>NSRemovableVolumesUsageDescription</key><string>Verre affiche les films, séries et la musique de vos disques externes dès qu’ils sont branchés.</string>
+	<key>NSNetworkVolumesUsageDescription</key><string>Verre affiche les films, séries et la musique de vos disques réseau.</string>
+</dict>
+</plist>

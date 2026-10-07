@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="70" y1="24" x2="1100" y2="700" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#161A2A"/><stop offset=".56" stop-color="#0A0D16"/><stop offset="1" stop-color="#17152B"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="100" y1="80" x2="1080" y2="670" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#202638" stop-opacity=".96"/><stop offset="1" stop-color="#111522" stop-opacity=".98"/>
+    </linearGradient>
+    <linearGradient id="violet" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#7B6CF6"/><stop offset="1" stop-color="#3D7CF7"/>
+    </linearGradient>
+    <linearGradient id="cover1" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9C6E8D"/><stop offset="1" stop-color="#272C50"/></linearGradient>
+    <linearGradient id="cover2" x1="1" y1="0" x2="0" y2="1"><stop stop-color="#D28B53"/><stop offset="1" stop-color="#533C54"/></linearGradient>
+    <linearGradient id="cover3" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#36677A"/><stop offset="1" stop-color="#ACB5B1"/></linearGradient>
+    <linearGradient id="cover4" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5966A0"/><stop offset="1" stop-color="#212742"/></linearGradient>
+    <filter id="shadow" x="0" y="0" width="1200" height="720" filterUnits="userSpaceOnUse"><feGaussianBlur stdDeviation="24"/></filter>
+    <clipPath id="window"><rect x="40" y="34" width="1120" height="652" rx="24"/></clipPath>
+  </defs>
+  <rect width="1200" height="720" rx="34" fill="url(#bg)"/>
+  <ellipse cx="920" cy="110" rx="250" ry="120" fill="#6C55D8" opacity=".12" filter="url(#shadow)"/>
+  <g clip-path="url(#window)">
+    <rect x="40" y="34" width="1120" height="652" rx="24" fill="url(#glass)" stroke="#FFFFFF" stroke-opacity=".14"/>
+    <rect x="40" y="34" width="248" height="652" fill="#0D111C" fill-opacity=".64"/>
+    <path d="M288 34v652" stroke="#FFFFFF" stroke-opacity=".08"/>
+    <circle cx="71" cy="64" r="6" fill="#F06A65"/><circle cx="91" cy="64" r="6" fill="#E7B84B"/><circle cx="111" cy="64" r="6" fill="#57BE71"/>
+    <rect x="61" y="101" width="34" height="34" rx="11" fill="#181B29" stroke="#FFFFFF" stroke-opacity=".12"/>
+    <path d="m74 109 12 9-12 9v-18Z" fill="url(#violet)"/>
+    <text x="108" y="124" fill="#F5F5FA" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="17" font-weight="650">Verre</text>
+    <text x="62" y="180" fill="#7E879B" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" letter-spacing="1.4">BIBLIOTHÈQUE</text>
+    <rect x="54" y="194" width="218" height="40" rx="12" fill="#FFFFFF" fill-opacity=".09"/>
+    <rect x="69" y="207" width="14" height="14" rx="3" stroke="#DAD9F8" stroke-width="1.4"/><path d="M72 211h8M72 215h8" stroke="#DAD9F8" stroke-width="1.2"/>
+    <text x="94" y="220" fill="#F4F3FA" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14">Albums</text><text x="247" y="220" fill="#9B9BAE" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12">12</text>
+    <text x="94" y="263" fill="#A3A8B6" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14">Artistes</text>
+    <text x="94" y="300" fill="#A3A8B6" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14">Morceaux</text>
+    <text x="62" y="359" fill="#7E879B" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" letter-spacing="1.4">PLAYLISTS</text>
+    <circle cx="73" cy="390" r="10" fill="#302D4F"/><path d="M73 385v10m-5-5h10" stroke="#CAC5FF" stroke-width="1.4"/>
+    <text x="94" y="395" fill="#C6C7D1" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14">Soir tranquille</text>
+    <circle cx="73" cy="428" r="10" fill="#2D3A4B"/><path d="M73 423v10m-5-5h10" stroke="#A7D6E7" stroke-width="1.4"/>
+    <text x="94" y="433" fill="#C6C7D1" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14">En route</text>
+    <text x="62" y="491" fill="#7E879B" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" letter-spacing="1.4">VIDÉO</text>
+    <text x="94" y="526" fill="#A3A8B6" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14">Films</text>
+    <text x="94" y="563" fill="#A3A8B6" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14">Séries</text>
+    <text x="330" y="112" fill="#858CA0" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" letter-spacing="1.6" font-weight="700">TA COLLECTION</text>
+    <text x="330" y="164" fill="#F5F4FA" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="38" font-weight="650" letter-spacing="-1.4">Albums</text>
+    <rect x="949" y="94" width="177" height="38" rx="19" fill="#FFFFFF" fill-opacity=".06" stroke="#FFFFFF" stroke-opacity=".09"/>
+    <circle cx="972" cy="113" r="6" stroke="#9298AA" stroke-width="1.5"/><path d="m976.5 117.5 4 4" stroke="#9298AA" stroke-width="1.5"/>
+    <text x="990" y="118" fill="#7D8496" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12">Rechercher</text>
+    <g transform="translate(330 205)">
+      <rect width="176" height="176" rx="15" fill="url(#cover1)"/><circle cx="91" cy="79" r="47" fill="#D0B1BD" fill-opacity=".2"/><path d="M29 135c24-29 37-6 58-32s42-24 62-3" stroke="#F0D7DB" stroke-opacity=".5" stroke-width="2"/>
+      <text x="0" y="207" fill="#F2F1F7" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="600">Les heures bleues</text><text x="0" y="230" fill="#8E95A6" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="13">Clara June</text>
+    </g>
+    <g transform="translate(535 205)">
+      <rect width="176" height="176" rx="15" fill="url(#cover2)"/><circle cx="88" cy="86" r="53" stroke="#F4D49D" stroke-opacity=".55" stroke-width="2"/><circle cx="88" cy="86" r="37" stroke="#F4D49D" stroke-opacity=".35"/><path d="M35 127 141 42" stroke="#FFE1A3" stroke-opacity=".4" stroke-width="3"/>
+      <text x="0" y="207" fill="#F2F1F7" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="600">Rester encore</text><text x="0" y="230" fill="#8E95A6" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="13">Milo Grey</text>
+    </g>
+    <g transform="translate(740 205)">
+      <rect width="176" height="176" rx="15" fill="url(#cover3)"/><path d="M0 126c40-42 66-28 94-66 28-37 44-26 82-56v172H0Z" fill="#172B3D" fill-opacity=".52"/><circle cx="128" cy="43" r="18" fill="#F8E3B9" fill-opacity=".72"/>
+      <text x="0" y="207" fill="#F2F1F7" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="600">L’autre rive</text><text x="0" y="230" fill="#8E95A6" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="13">Nora Vale</text>
+    </g>
+    <g transform="translate(945 205)">
+      <rect width="176" height="176" rx="15" fill="url(#cover4)"/><path d="M28 120 82 54l28 33 22-21 24 54H28Z" fill="#D9E0FA" fill-opacity=".3"/><circle cx="130" cy="49" r="11" fill="#CAD7FF" fill-opacity=".8"/>
+      <text x="0" y="207" fill="#F2F1F7" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="15" font-weight="600">Minuit moins cinq</text><text x="0" y="230" fill="#8E95A6" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="13">Nuit Commune</text>
+    </g>
+    <rect x="330" y="488" width="790" height="112" rx="18" fill="#FFFFFF" fill-opacity=".055" stroke="#FFFFFF" stroke-opacity=".09"/>
+    <rect x="349" y="507" width="74" height="74" rx="12" fill="url(#cover1)"/><circle cx="386" cy="544" r="20" fill="#D0B1BD" fill-opacity=".28"/>
+    <text x="443" y="535" fill="#F4F3F8" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="600">Les heures bleues</text>
+    <text x="443" y="557" fill="#8E95A6" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12">Clara June</text>
+    <path d="M713 543h200" stroke="#545B6C" stroke-width="3" stroke-linecap="round"/><path d="M713 543h71" stroke="url(#violet)" stroke-width="3" stroke-linecap="round"/><circle cx="784" cy="543" r="5" fill="#B8B3FF"/>
+    <text x="704" y="568" fill="#777F92" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">1:24</text><text x="917" y="568" fill="#777F92" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">3:52</text>
+    <circle cx="1046" cy="544" r="21" fill="url(#violet)"/><path d="m1042 534 13 10-13 10v-20Z" fill="white"/>
+    <rect x="289" y="633" width="871" height="53" fill="#0B0E16" fill-opacity=".82"/>
+    <path d="M40 633h1120" stroke="#FFFFFF" stroke-opacity=".09"/>
+    <rect x="66" y="650" width="22" height="18" rx="4" fill="#FFFFFF" fill-opacity=".07"/><path d="M72 661h10m-8-5h6" stroke="#AAB0C0" stroke-width="1.4"/>
+    <text x="100" y="664" fill="#9EA4B4" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11">Bibliothèque locale</text>
+    <text x="937" y="664" fill="#7D8495" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11">Ta musique, en un seul endroit</text>
+  </g>
+</svg>
