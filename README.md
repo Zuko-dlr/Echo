@@ -10,7 +10,7 @@
     &nbsp;·&nbsp;
     <a href="#confidentialite">Confidentialité</a>
   </p>
-  <sub>macOS 14 ou ultérieur · Apple silicon · Version 1.1</sub>
+  <sub>macOS 14 ou ultérieur · Apple silicon · Version 1.2</sub>
 </div>
 
 ---
