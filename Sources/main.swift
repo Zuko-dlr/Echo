@@ -95,7 +95,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate {
         window.title = "Écho"
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
-        window.backgroundColor = NSColor(red: 0.043, green: 0.063, blue: 0.149, alpha: 1)
+        window.backgroundColor = NSColor(red: 0.039, green: 0.039, blue: 0.063, alpha: 1)   // même fond que l'interface (#0a0a10)
         window.minSize = NSSize(width: 960, height: 620)
         window.collectionBehavior = [.fullScreenPrimary]
         window.contentView = webView

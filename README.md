@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/echo-preview.svg" alt="Aperçu d’Écho, une bibliothèque de musique et de films pour Mac" width="760">
+  <img src="docs/echo-preview.png" alt="Aperçu d’Écho, une bibliothèque de musique et de films pour Mac" width="760">
   <h1>Écho</h1>
   <p><strong>Ta collection. Ton Mac. Ta façon de regarder et d’écouter.</strong></p>
   <p>Une bibliothèque personnelle pour ta musique, tes films et tes séries.</p>

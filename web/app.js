@@ -78,6 +78,7 @@ const ICON = {
 
 /* ---------- Éléments fixes de la page ---------- */
 const wall = $('#wall'), nav = $('#nav'), main = $('#main'), scroll = $('#scroll'), sheet = $('#sheet');
+const side = $('.side'), navInd = $('#nav-ind'), fAmbient = $('#f-ambient');
 const player = $('#player'), pArt = $('.p-art'), fArt = $('.f-art'), pPlay = $('#p-play'), fPlay = $('.f-play');
 const pLine = $('.p-line i'), fBar = $('#f-bar i'), fPos = $('#f-pos'), fRem = $('#f-rem');
 const video = $('#video'), vp = $('#vplayer'), vLayer = $('#v-layer'), vPlay = $('#v-play');
@@ -107,7 +108,7 @@ const watched = p => p && p.dur && p.pos >= p.dur * .92;
 const pct = p => (p.pos / p.dur * 100).toFixed(1);
 
 /* ---------- Fond aux couleurs du contenu ---------- */
-const DEFAULT = ['#2448c9', '#7c3aed', '#f97316', '#0b1026'];
+const DEFAULT = ['#3b4fd8', '#7c3aed', '#d9486f', '#0a0a10'];
 function toHsl(hex) {
   const [r, g, b] = Art.hexRgb(hex).map(v => v / 255);
   const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2;
@@ -146,8 +147,12 @@ function safePalette(colors) {
 function paint(colors) {
   const c = safePalette(colors) || DEFAULT, def = c === DEFAULT;
   ['--c1', '--c2', '--c3'].forEach((k, i) => wall.style.setProperty(k, c[i]));
-  wall.style.setProperty('--c4', def ? '#06b6d4' : Art.mix(c[3], c[0], .5));
-  wall.style.setProperty('--base', def ? c[3] : Art.mix(c[3], '#000000', .4));
+  wall.style.setProperty('--c4', def ? '#1d7fb3' : Art.mix(c[3], c[0], .5));
+  // fond presque noir : le halo coloré reste un halo, le texte et le verre restent lisibles
+  const base = def ? c[3] : Art.mix(c[3], '#000000', .6);
+  wall.style.setProperty('--base', base);
+  document.documentElement.style.setProperty('--base', base);
+  if (window.Shader) Shader.setColors([c[0], c[1], c[2], def ? '#1d7fb3' : Art.mix(c[3], c[0], .5), base]);
 }
 const paintCurrent = () => paint(Player.track ? Player.track.album.colors : null);
 
@@ -207,10 +212,24 @@ function renderNav() {
     <a href="#" data-action="new-playlist" class="new">${ICON.plus}Nouvelle playlist</a>
     <div class="sec">Vidéos</div>${item('movies', ICON.film, 'Films')}${item('shows', ICON.tv, 'Séries')}
     <div class="sec">Disques</div>${disks}`);
+  placeNavInd();
 }
+// la pastille de sélection glisse vers le lien actif (une seule pastille pour toute la barre)
+let navFirst = true;
+function placeNavInd() {
+  const on = $('#nav a.on');
+  Motion.slideTo(navInd, on, side, { first: navFirst });
+  navFirst = false;
+}
+nav.addEventListener('scroll', () => Motion.slideTo(navInd, $('#nav a.on'), side, { first: true }), { passive: true });
+addEventListener('resize', () => Motion.slideTo(navInd, $('#nav a.on'), side, { first: true }));
 $('#open-settings').innerHTML = ICON.settings + 'Réglages';
 
 function go(v) { view = v; query = ''; closeSheet(); render(true); }
+// grand titre qui se compacte dès qu'on fait défiler
+scroll.addEventListener('scroll', () => scroll.classList.toggle('scrolled', scroll.scrollTop > 28), { passive: true });
+// vignettes et cartes qui s'inclinent sous la souris
+Motion.tilt(scroll, '.tile, .card');
 nav.addEventListener('click', e => {
   const act = e.target.closest('[data-action]'); if (act) { e.preventDefault(); return action(act.dataset.action); }
   const a = e.target.closest('a[data-view]'); if (!a) return; e.preventDefault(); go(a.dataset.view);
@@ -246,16 +265,16 @@ function render(animate) {
   if (view === 'albums') {
     const list = S.albums.filter(a => match(a.title, a.artist));
     body = !S.albums.length ? musicEmpty() : !list.length ? noResult()
-      : `<div class="grid">${list.map((a, i) => `<button class="tile" data-album="${a.id}" style="--i:${i}"><img src="${esc(albumArt(a, 400))}" alt="" loading="lazy"><div class="t">${esc(a.title)}</div><div class="a">${esc(a.artist)}</div></button>`).join('')}</div>`;
+      : `<div class="grid">${list.map((a, i) => `<button class="tile" data-album="${a.id}" style="--i:${i}"><div class="pic"><img src="${esc(albumArt(a, 400))}" alt="" loading="lazy"><span class="tplay" role="button" aria-label="Lire l’album" data-play-album="${a.id}">${ICON.play}</span></div><div class="t">${esc(a.title)}</div><div class="a">${esc(a.artist)}</div></button>`).join('')}</div>`;
   } else if (view === 'artists') {
     const seen = new Map(); S.albums.forEach(a => seen.has(a.artist) || seen.set(a.artist, a));
     const list = [...seen.values()].filter(a => match(a.artist));
     body = !S.albums.length ? musicEmpty() : !list.length ? noResult()
-      : `<div class="grid">${list.map((a, i) => `<button class="tile round" data-artist="${esc(a.artist)}" style="--i:${i}"><img src="${esc(albumArt(a, 400))}" alt=""><div class="t">${esc(a.artist)}</div></button>`).join('')}</div>`;
+      : `<div class="grid">${list.map((a, i) => `<button class="tile round" data-artist="${esc(a.artist)}" style="--i:${i}"><div class="pic"><img src="${esc(albumArt(a, 400))}" alt=""></div><div class="t">${esc(a.artist)}</div></button>`).join('')}</div>`;
   } else if (view === 'songs') {
     const list = S.tracks.filter(t => match(t.title, t.artist, t.album.title));
     body = !S.albums.length ? musicEmpty() : !list.length ? noResult()
-      : `<div class="list glass">${list.map(t => `<button class="row${Player.track === t ? ' current' : ''}" data-track="${t.id}" draggable="true"><img src="${esc(albumArt(t.album, 120))}" alt="" loading="lazy"><span class="ti">${esc(t.title)}</span><span class="dim">${esc(t.artist)}</span><span class="dim">${esc(t.album.title)}</span><span class="d">${t.duration ? fmt(t.duration) : '—'}</span><span class="addto" role="button" title="Ajouter à une playlist" data-add-track="${t.id}">${ICON.plusCircle}</span></button>`).join('')}</div>`;
+      : `<div class="list glass">${list.map((t, i) => `<button class="row${Player.track === t ? ' current' : ''}" data-track="${t.id}" draggable="true" style="--i:${i}"><img src="${esc(albumArt(t.album, 120))}" alt="" loading="lazy"><span class="ti">${esc(t.title)}</span><span class="dim">${esc(t.artist)}</span><span class="dim">${esc(t.album.title)}</span><span class="d">${t.duration ? fmt(t.duration) : '—'}</span><span class="addto" role="button" title="Ajouter à une playlist" data-add-track="${t.id}">${ICON.plusCircle}</span></button>`).join('')}</div>`;
   } else {
     const isMovies = view === 'movies', all = isMovies ? S.movies : S.shows;
     const items = all.filter(x => match(x.title));
@@ -271,8 +290,9 @@ function render(animate) {
         const off = isMovies ? !x.files.some(f => f.available) : !x.seasons.some(s => s.episodes.some(e => e.file.available));
         const sub = isMovies ? (x.year || '') : plural(x.seasons.length, 'saison', 'saisons');
         const p = isMovies && x.files[0] ? S.progress[x.files[0].id] : null;
+        const playable = !off && (isMovies ? x.files.some(f => f.available && f.native) : true);
         return `<button class="tile${off ? ' off' : ''}" data-${isMovies ? 'movie' : 'show'}="${x.id}" style="--i:${i + 1}">
-          <div class="pic">${posterPic(x)}${off ? `<span class="badge">${ICON.disk}Débranché</span>` : ''}${pbar(p)}</div>
+          <div class="pic">${posterPic(x)}${off ? `<span class="badge">${ICON.disk}Débranché</span>` : ''}${pbar(p)}${playable ? `<span class="tplay" role="button" aria-label="Lire" data-play-${isMovies ? 'movie' : 'show'}="${x.id}">${ICON.play}</span>` : ''}</div>
           <div class="t">${esc(x.title)}${checkMark(p)}</div><div class="a">${esc(sub)}</div></button>`;
       }).join('')}</div>`;
     }
@@ -281,6 +301,7 @@ function render(animate) {
   put(scroll, `<div class="top"><h1 style="--i:0">${TITLES[view]}</h1><span class="count" style="--i:1">${count}</span>
     <label class="search glass" style="--i:2">${ICON.search}<input id="search" type="search" placeholder="Rechercher" value="${esc(query)}" autocomplete="off" spellcheck="false"></label></div>
     <div class="${animate ? 'enter' : ''}">${body}</div>`, animate);
+  if (animate) { scroll.scrollTop = 0; scroll.classList.remove('scrolled'); }
   if (document.activeElement === document.body && query) $('#search').focus();
 }
 
@@ -313,6 +334,10 @@ scroll.addEventListener('input', e => {
 scroll.addEventListener('click', e => {
   const t = e.target;
   const add = t.closest('[data-add-track]'); if (add) { e.stopPropagation(); return openAddMenu([add.dataset.addTrack], add); }
+  // bouton « lecture » posé sur la pochette ou l'affiche : lit sans ouvrir la fiche
+  const pa = t.closest('[data-play-album]'); if (pa) { e.stopPropagation(); return Player.playAlbum(S.albums.find(a => a.id === pa.dataset.playAlbum)); }
+  const pm = t.closest('[data-play-movie]'); if (pm) { e.stopPropagation(); return playMovie(S.movies.find(m => m.id === pm.dataset.playMovie)); }
+  const ps = t.closest('[data-play-show]'); if (ps) { e.stopPropagation(); const s = S.shows.find(x => x.id === ps.dataset.playShow); return s && playEpisode(s, nextEpisode(episodes(s))); }
   const rmb = t.closest('[data-rm]'); if (rmb) { e.stopPropagation(); return Native.call('playlistRemove', { id: currentPlaylist().id, index: +rmb.dataset.rm }); }
   const plb = t.closest('[data-pl]'); if (plb) return playlistAction(plb.dataset.pl);
   const prow = t.closest('.prow'); if (prow) return playFromPlaylist(+prow.dataset.index);
@@ -335,25 +360,53 @@ function action(a) {
 }
 
 /* ---------- Fiches ---------- */
-let sheetCtx = null;
-function showSheet(html, { scrolly = false, narrow = false, colors = null } = {}) {
-  sheet.className = 'sheet glass' + (scrolly ? ' scrolly' : '') + (narrow ? ' narrow' : '');
-  sheet.innerHTML = `<button class="sheet-close glass" aria-label="Fermer">${ICON.close}</button>` + html;
+let sheetCtx = null, reopening = false;
+/** Rectangle qu'aura `target` quand `container` sera revenu au repos (sans sa transformation d'entrée). */
+function restRect(container, target, styles) {
+  const saved = {}; for (const k in styles) { saved[k] = container.style[k]; container.style[k] = styles[k]; }
+  const prevT = container.style.transition; container.style.transition = 'none';
+  const r = target.getBoundingClientRect();
+  for (const k in styles) container.style[k] = saved[k];
+  void container.offsetWidth; container.style.transition = prevT;
+  return r;
+}
+// image dont est partie la fiche ouverte (pochette ou affiche de la grille), pour le vol retour
+let sheetSource = null;
+/** `fly` : { from: élément de la grille, to: sélecteur dans la fiche } → l'image vole de l'un à l'autre. */
+function showSheet(html, { scrolly = false, narrow = false, colors = null, fly = null } = {}) {
+  const keep = reopening && sheet.classList.contains('open');
+  sheet.className = 'sheet glass tint' + (scrolly ? ' scrolly' : '') + (narrow ? ' narrow' : '') + (keep ? ' open' : '');
+  sheet.innerHTML = `<button class="sheet-close" aria-label="Fermer">${ICON.close}</button>` + html;
   sheet.scrollTop = 0;
-  void sheet.offsetWidth;
-  sheet.classList.add('open'); sheet.setAttribute('aria-hidden', 'false');
+  if (!keep) {
+    Motion.cancelFlights();
+    sheetSource = fly && fly.from || null;
+    const target = fly && $(fly.to, sheet);
+    const toRect = target && restRect(sheet, target, { transform: 'none' });
+    void sheet.offsetWidth;
+    sheet.classList.add('open');
+    if (target && toRect) Motion.fly(fly.from, target, { toRect, radius: getComputedStyle(target).borderRadius });
+  }
+  sheet.setAttribute('aria-hidden', 'false');
   main.classList.add('sheet-open');
   if (colors) paint(colors);
 }
 function closeSheet() {
   if (!sheetCtx) return;
+  const ctx = sheetCtx;
   sheetCtx = null;
   sheet.classList.remove('open'); sheet.setAttribute('aria-hidden', 'true');
   main.classList.remove('sheet-open');
+  // la pochette revole vers sa vignette si elle est encore affichée
+  const back = sheetSource && sheetSource.isConnected && (ctx.type === 'album' ? $('.sheet-head img', sheet) : $('.m-poster', sheet));
+  if (back) Motion.fly(back, sheetSource, { toRect: restRect(scroll, sheetSource, { transform: 'none', filter: 'none' }), spring: 'snappy' });
+  sheetSource = null;
   paintCurrent();
 }
 // fiche redessinée (données mises à jour, saison choisie…) sans perdre la position de défilement
-function reopen(open, item) { const y = sheet.scrollTop; open(item); sheet.scrollTop = y; }
+function reopen(open, item) { const y = sheet.scrollTop; reopening = true; try { open(item); } finally { reopening = false; } sheet.scrollTop = y; }
+// vignette de la grille correspondant à un élément (pour faire voler son image)
+const tileImg = sel => { const t = $(sel, scroll); return t && (t.querySelector('.pic img, .pic .ph') || null); };
 
 function openAlbum(a) {
   if (!a) return;
@@ -361,20 +414,23 @@ function openAlbum(a) {
   const mins = Math.round(a.tracks.reduce((s, t) => s + (t.duration || 0), 0) / 60);
   showSheet(`
     <div class="sheet-head"><img src="${esc(albumArt(a, 400))}" alt="">
-      <div><h2>${esc(a.title)}</h2><div class="artist">${esc(a.artist)}</div>
-        <div class="meta">${[a.genre, a.year, plural(a.tracks.length, 'morceau', 'morceaux'), mins ? mins + ' min' : ''].filter(Boolean).map(esc).join(' · ')}</div>
-        <div class="pills"><button class="pill primary" data-a="play">${ICON.play}Lire</button><button class="pill soft" data-a="shuffle">${ICON.shuffle}Aléatoire</button><button class="pill soft" data-a="add-album">${ICON.plusCircle}Ajouter à une playlist</button></div></div></div>
-    <div class="rows">${a.tracks.map((t, i) => `<button class="row arow${Player.track === t ? ' current' : ''}" data-i="${i}" data-track-id="${t.id}" draggable="true"><span class="n"><span class="num">${t.n || i + 1}</span><span class="eq"><i></i><i></i><i></i></span></span><span class="ti">${esc(t.title)}</span><span class="addto" role="button" title="Ajouter à une playlist" data-add-track="${t.id}">${ICON.plusCircle}</span><span class="d">${t.duration ? fmt(t.duration) : '—'}</span></button>`).join('')}</div>`);
+      <div><h2 style="--i:0">${esc(a.title)}</h2><div class="artist" style="--i:1">${esc(a.artist)}</div>
+        <div class="meta" style="--i:2">${[a.genre, a.year, plural(a.tracks.length, 'morceau', 'morceaux'), mins ? mins + ' min' : ''].filter(Boolean).map(esc).join(' · ')}</div>
+        <div class="pills" style="--i:3"><button class="pill primary" data-a="play">${ICON.play}Lire</button><button class="pill soft" data-a="shuffle">${ICON.shuffle}Aléatoire</button><button class="pill soft" data-a="add-album">${ICON.plusCircle}Ajouter à une playlist</button></div></div></div>
+    <div class="rows">${a.tracks.map((t, i) => `<button class="row arow${Player.track === t ? ' current' : ''}" data-i="${i}" data-track-id="${t.id}" draggable="true" style="--i:${i}"><span class="n"><span class="num">${t.n || i + 1}</span><span class="eq"><i></i><i></i><i></i></span></span><span class="ti">${esc(t.title)}</span><span class="addto" role="button" title="Ajouter à une playlist" data-add-track="${t.id}">${ICON.plusCircle}</span><span class="d">${t.duration ? fmt(t.duration) : '—'}</span></button>`).join('')}</div>`,
+    { fly: { from: tileImg(`.tile[data-album="${a.id}"]`), to: '.sheet-head img' } });
 }
 
 const infoLine = (x, second) => [x.year, second, (x.genres || []).slice(0, 2).join(', '), x.rating ? '★ ' + nf1.format(x.rating) : ''].filter(Boolean).map(String);
-const movieLine = (m, plain) => { const parts = infoLine(m, runtime(m.runtime)); return (plain ? parts : parts.map(esc)).join(' · '); };
+// la note « ★ 7,8 » prend la couleur de l'étoile ; le reste est séparé par des points médians
+const infoHtml = parts => parts.map(p => p.startsWith('★') ? `<span class="star">${esc(p)}</span>` : esc(p)).join('<span class="sep"> · </span>');
+const movieLine = (m, plain) => { const parts = infoLine(m, runtime(m.runtime)); return plain ? parts.join(' · ') : infoHtml(parts); };
 // image de fond + affiche + titre des fiches film et série
 const mediaHead = (x, title, line, pills) => `
     <div class="hero" style="${bgImg(x.backdrop || x.thumb)}"></div>
     <div class="m-head"><div class="pic">${x.poster || x.thumb ? `<img class="m-poster" src="${esc(x.poster || x.thumb)}" alt="">` : `<div class="m-poster ph" style="background:linear-gradient(160deg, ${(x.colors || DEFAULT)[0]}, ${(x.colors || DEFAULT)[1]})">${esc(x.title)}</div>`}</div>
-      <div><h2>${title}</h2><div class="m-line">${line}</div>${pills}</div></div>
-    ${x.overview ? `<p class="m-overview">${esc(x.overview)}</p>` : ''}`;
+      <div><h2 style="--i:0">${title}</h2><div class="m-line" style="--i:1">${line}</div>${pills}</div></div>
+    ${x.overview ? `<p class="m-overview" style="--i:3">${esc(x.overview)}</p>` : ''}`;
 
 function openMovie(m) {
   if (!m) return;
@@ -386,10 +442,10 @@ function openMovie(m) {
   else if (!f.native) buttons = `<button class="pill primary" data-a="external">${ICON.play}Lire</button>`;
   else if (resumable(p)) buttons = `<button class="pill primary" data-a="resume">${ICON.play}Reprendre à ${fmt(p.pos)}</button><button class="pill soft" data-a="start">Depuis le début</button>`;
   else buttons = `<button class="pill primary" data-a="start">${ICON.play}Lire</button>`;
-  showSheet(mediaHead(m, esc(m.title) + checkMark(p), movieLine(m), `<div class="pills">${buttons}</div>`) + `
-    <div class="m-file">${fileLine(f)}
+  showSheet(mediaHead(m, esc(m.title) + checkMark(p), movieLine(m), `<div class="pills" style="--i:2">${buttons}</div>`) + `
+    <div class="m-file" style="--i:4">${fileLine(f)}
       ${S.settings.hasKey ? `<button data-a="match">Ce n’est pas le bon film ?</button>` : ''}</div>`,
-    { scrolly: true, colors: m.colors });
+    { scrolly: true, colors: m.colors, fly: { from: tileImg(`.tile[data-movie="${m.id}"]`), to: '.m-poster' } });
 }
 
 function fileLine(f) {
@@ -412,19 +468,23 @@ function openShow(s) {
   const nextEp = nextEpisode(episodes(s));
   const avail = nextEp && nextEp.file.available;
   const label = nextEp && resumable(S.progress[nextEp.file.id]) ? `Reprendre S${nextEp.s} É${nextEp.e}` : `Lire S${nextEp.s} É${nextEp.e}`;
-  const line = infoLine(s, plural(s.seasons.length, 'saison', 'saisons')).map(esc).join(' · ');
+  const line = infoHtml(infoLine(s, plural(s.seasons.length, 'saison', 'saisons')));
+  // position de la sélection de saison avant redessin : la nouvelle glissera depuis là
+  const prevSeg = $('.seg-ind', sheet)?._pos;
   showSheet(mediaHead(s, esc(s.title), line, `
-        <div class="pills"><button class="pill primary" data-a="next-ep" ${avail ? '' : 'disabled'}>${ICON.play}${label}</button></div>`) + `
-    ${s.seasons.length > 1 ? `<div class="seasons">${s.seasons.map(x => `<button data-season="${x.n}" class="${x.n === season.n ? 'on' : ''}">${x.n ? 'Saison ' + x.n : 'Hors saison'}</button>`).join('')}</div>` : '<div style="height:22px"></div>'}
-    <div class="eps">${season.episodes.map(e => {
+        <div class="pills" style="--i:2"><button class="pill primary" data-a="next-ep" ${avail ? '' : 'disabled'}>${ICON.play}${label}</button></div>`) + `
+    ${s.seasons.length > 1 ? `<div class="seasons" style="--i:4"><i class="seg-ind"></i>${s.seasons.map(x => `<button data-season="${x.n}" class="${x.n === season.n ? 'on' : ''}">${x.n ? 'Saison ' + x.n : 'Hors saison'}</button>`).join('')}</div>` : '<div style="height:22px"></div>'}
+    <div class="eps">${season.episodes.map((e, i) => {
       const p = S.progress[e.file.id];
-      return `<button class="ep${e.file.available ? '' : ' off'}" data-ep="${e.id}">
+      return `<button class="ep${e.file.available ? '' : ' off'}" data-ep="${e.id}" style="--i:${i}">
         <div class="pic" style="${bgImg(e.still)}">${pbar(p)}</div>
         <div style="min-width:0"><b>${e.e}. ${esc(e.title)}${checkMark(p)}</b><span>${[runtime(e.runtime), e.file.native ? '' : e.file.ext.toUpperCase() + ' · Elmedia Player', e.file.available ? '' : 'Disque « ' + esc(e.file.volume) + ' » débranché'].filter(Boolean).join(' · ')}</span>${e.overview ? `<p>${esc(e.overview)}</p>` : ''}</div>
         <span class="go">${ICON.play}</span></button>`;
     }).join('')}</div>
     <div class="m-file">${S.settings.hasKey ? `<button data-a="match">Ce n’est pas la bonne série ?</button>` : ''}</div>`,
-    { scrolly: true, colors: s.colors });
+    { scrolly: true, colors: s.colors, fly: { from: tileImg(`.tile[data-show="${s.id}"]`), to: '.m-poster' } });
+  const seg = $('.seg-ind', sheet);
+  if (seg) { if (prevSeg) seg._pos = prevSeg; Motion.slideTo(seg, $('.seasons .on', sheet), seg.parentElement, { first: !prevSeg }); }
 }
 
 function openSettings() {
@@ -651,13 +711,13 @@ function renderPlaylist(animate) {
   const cover = arts.length >= 4 ? `<div class="pl-cover">${arts.map(a => `<img src="${esc(a)}" alt="">`).join('')}</div>`
     : arts.length ? `<div class="pl-cover one"><img src="${esc(arts[0])}" alt=""></div>` : `<div class="pl-cover none">${ICON.playlist}</div>`;
   const rows = items.map((t, i) => `
-    <div class="row prow${t.missing ? ' missing' : ''}${Player.track === t ? ' current' : ''}" role="button" tabindex="0" draggable="true" data-index="${i}" ${t.missing ? '' : `data-track="${t.id}"`} title="${t.missing ? 'Disque débranché' : ''}">
+    <div class="row prow${t.missing ? ' missing' : ''}${Player.track === t ? ' current' : ''}" role="button" tabindex="0" draggable="true" data-index="${i}" ${t.missing ? '' : `data-track="${t.id}"`} title="${t.missing ? 'Disque débranché' : ''}" style="--i:${i}">
       <img src="${esc(albumArt(t.album, 120))}" alt=""><span class="ti">${esc(t.title)}</span><span class="dim">${esc(t.artist)}</span>
       <span class="dim">${esc(t.album.title)}${t.missing ? ' · indisponible' : ''}</span><span class="d">${t.duration ? fmt(t.duration) : '—'}</span>
       <span class="rm" role="button" title="Retirer de la playlist" data-rm="${i}">${ICON.close}</span></div>`).join('');
   const dis = playable.length ? '' : 'disabled';
   put(scroll, `<div class="${animate ? 'enter' : ''}">
-    <div class="pl-head">${cover}<div>
+    <div class="pl-head" style="--i:0">${cover}<div>
       <div class="eyebrow">Playlist</div><h1 class="pl-name">${esc(pl.name)}</h1>
       <div class="meta">${plural(items.length, 'morceau', 'morceaux')}${mins ? ' · ' + mins + ' min' : ''}</div>
       <div class="pills">
@@ -851,13 +911,15 @@ $('#m-volume').oninput = e => { audio.volume = +e.target.value; e.target.style.s
 
 function showPlayState() {
   pPlay.innerHTML = fPlay.innerHTML = Player.playing ? ICON.pause : ICON.play;
+  Motion.pop(pPlay); Motion.pop(fPlay);
   document.body.classList.toggle('is-playing', Player.playing);
   syncNowPlaying();
   drawSoon();
 }
 function showTrack(t) {
-  pArt.style.backgroundImage = fArt.style.backgroundImage = `url("${albumArt(t.album, 600)}")`;
-  $('#p-title').textContent = $('#f-title').textContent = t.title;
+  pArt.style.backgroundImage = fArt.style.backgroundImage = fAmbient.style.backgroundImage = `url("${albumArt(t.album, 600)}")`;
+  Motion.pop(pArt); Motion.pop(fArt, 'pop');
+  Motion.marquee($('#p-title'), t.title); Motion.marquee($('#f-title'), t.title);
   $('#p-sub').textContent = $('#f-sub').textContent = t.artist;
   if (!sheetCtx || sheetCtx.type === 'album') paint(t.album.colors);
   const al = sheetCtx && sheetCtx.type === 'album' && S.albums.find(a => a.id === sheetCtx.id);
