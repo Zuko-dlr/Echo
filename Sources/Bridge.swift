@@ -134,7 +134,8 @@ final class Bridge: NSObject, WKScriptMessageHandlerWithReply {
             return true
 
         case "windowButtons":
-            let alpha: CGFloat = (a["visible"] as? Bool ?? true) ? 1 : 0
+            let visible = a["visible"] as? Bool ?? true, alpha: CGFloat = visible ? 1 : 0
+            window?.trafficLights.forEach { $0.isEnabled = visible }   // cachés = inactifs
             NSAnimationContext.runAnimationGroup({ ctx in
                 ctx.duration = 0.5
                 window?.trafficLights.forEach { $0.animator().alphaValue = alpha }

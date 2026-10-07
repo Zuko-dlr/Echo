@@ -108,7 +108,9 @@ const watched = p => p && p.dur && p.pos >= p.dur * .92;
 const pct = p => (p.pos / p.dur * 100).toFixed(1);
 
 /* ---------- Fond aux couleurs du contenu ---------- */
-const DEFAULT = ['#3b4fd8', '#7c3aed', '#d9486f', '#0a0a10'];
+// couleurs par défaut, celles de l'écran d'ouverture : rose, pêche et prune en grand, l'ambre en touche
+// (assez profondes pour que le texte blanc et gris reste lisible, comme avec les couleurs des pochettes)
+const DEFAULT = ['#b4435f', '#c46a4a', '#7d2850', '#12060c'], DEFAULT_C4 = '#b07a2e';
 function toHsl(hex) {
   const [r, g, b] = Art.hexRgb(hex).map(v => v / 255);
   const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2;
@@ -147,12 +149,12 @@ function safePalette(colors) {
 function paint(colors) {
   const c = safePalette(colors) || DEFAULT, def = c === DEFAULT;
   ['--c1', '--c2', '--c3'].forEach((k, i) => wall.style.setProperty(k, c[i]));
-  wall.style.setProperty('--c4', def ? '#1d7fb3' : Art.mix(c[3], c[0], .5));
+  wall.style.setProperty('--c4', def ? DEFAULT_C4 : Art.mix(c[3], c[0], .5));
   // fond presque noir : le halo coloré reste un halo, le texte et le verre restent lisibles
   const base = def ? c[3] : Art.mix(c[3], '#000000', .6);
   wall.style.setProperty('--base', base);
   document.documentElement.style.setProperty('--base', base);
-  if (window.Shader) Shader.setColors([c[0], c[1], c[2], def ? '#1d7fb3' : Art.mix(c[3], c[0], .5), base]);
+  if (window.Shader) Shader.setColors([c[0], c[1], c[2], def ? DEFAULT_C4 : Art.mix(c[3], c[0], .5), base]);
 }
 const paintCurrent = () => paint(Player.track ? Player.track.album.colors : null);
 
@@ -1039,8 +1041,11 @@ Native.on('state', st => {
   setStatus(S.status);
   render(false);
   const buttons = () => Native.call('windowButtons', { visible: true });
+  if (window.Intro) await Intro.done;          // écran d'ouverture (intro.js), puis entrée de l'interface
+  document.body.classList.remove('boot');
+  setTimeout(() => window.Shader?.release(), reduced ? 0 : 600);   // le fond glisse ensuite vers les couleurs du contenu
   if (reduced) { document.body.classList.remove('intro'); return buttons(); }
-  setTimeout(buttons, 1250);
-  setTimeout(() => document.body.classList.remove('intro'), 3350);
+  setTimeout(buttons, 350);
+  setTimeout(() => document.body.classList.remove('intro'), 1600);
 })();
 })();

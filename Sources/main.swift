@@ -77,6 +77,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate {
         cfg.mediaTypesRequiringUserActionForPlayback = []
         cfg.preferences.isElementFullscreenEnabled = true
         cfg.userContentController.addScriptMessageHandler(bridge, contentWorld: .page, name: "native")
+        // l'interface sait si VoiceOver est actif : l'écran d'ouverture est alors sauté
+        let pageEnv = "window.EchoEnv = { voiceOver: \(NSWorkspace.shared.isVoiceOverEnabled) };"
+        cfg.userContentController.addUserScript(WKUserScript(source: pageEnv, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         // les fichiers (morceaux, vidéos, images) passent par l'app : l'interface ne lit pas le disque elle-même
         let library = self.library
         cfg.setURLSchemeHandler(MediaSchemeHandler(allowed: { path in MainActor.assumeIsolated { library.isAllowedMedia(path) } }),
@@ -104,7 +107,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate {
         bridge.webView = webView
         bridge.window = window
         // boutons de fenêtre cachés pendant l'animation de lancement
-        window.trafficLights.forEach { $0.alphaValue = 0 }
+        window.trafficLights.forEach { $0.alphaValue = 0; $0.isEnabled = false }
         // AppKit replace les boutons à chaque redimensionnement / plein écran / activation : on les remet en place
         window.placeTrafficLights()
         for name in [NSWindow.didResizeNotification, NSWindow.didEndLiveResizeNotification, NSWindow.didExitFullScreenNotification,

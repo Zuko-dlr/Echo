@@ -78,9 +78,22 @@ function parse(c) {
   if (c[0] === '#') { let h = c.slice(1); if (h.length === 3) h = h.replace(/./g, '$&$&'); const n = parseInt(h, 16); return [n >> 16 & 255, n >> 8 & 255, n & 255].map(v => v / 255); }
   const m = c.match(/[\d.]+/g); return m ? m.slice(0, 3).map(v => +v / 255) : [0, 0, 0];
 }
-let target = ['#3b4fd8', '#7c3aed', '#d9486f', '#1d7fb3', '#0a0a10'].map(parse);
+// le fond naît dans les teintes chaudes de l'écran d'ouverture (intro.js, ce sont aussi les couleurs par défaut)
+// et les garde jusqu'à release() ; il glisse ensuite lentement vers les couleurs du contenu en cours
+const WARM = ['#b4435f', '#c46a4a', '#7d2850', '#b07a2e', '#12060c'];
+let held = document.body.classList.contains('boot'), pending = null, slow = 0;
+let target = WARM.map(parse);
 let current = target.map(c => [...c]);
-function setColors(cols) { if (cols && cols.length >= 5) { target = cols.map(parse); wake(); } }
+function setColors(cols) {
+  if (!cols || cols.length < 5) return;
+  if (held) { pending = cols; return; }
+  target = cols.map(parse); wake();
+}
+function release() {
+  if (!held) return;
+  held = false; slow = 1;
+  if (pending) setColors(pending);
+}
 
 /* ---------- Rendu : demi-résolution (le résultat est flou par nature), pause quand rien ne bouge ---------- */
 function resize() {
@@ -94,14 +107,15 @@ function frame(now) {
   const dt = Math.min(.1, (now - (last || now)) / 1000); last = now;
   if (document.hidden || (vplayer && vplayer.classList.contains('open'))) { last = 0; raf = 0; setTimeout(wake, 400); return; }   // caché : on ne dessine pas
   if (!reduced) time += dt;
-  // fondu des couleurs (≈ 1,5 s pour arriver)
-  const k = 1 - Math.exp(-dt / .5); let moving = false;
+  // fondu des couleurs (≈ 1,5 s pour arriver ; ≈ 5 s pour quitter les teintes de l'ouverture)
+  const k = 1 - Math.exp(-dt / (slow ? 1.7 : .5)); let moving = false;
   current = current.map((c, i) => c.map((v, j) => { const d = target[i][j] - v; if (Math.abs(d) > .002) moving = true; return v + d * k; }));
   resize();
   gl.uniform2f(U.u_res, canvas.width, canvas.height); gl.uniform1f(U.u_time, time);
   [U.u_c1, U.u_c2, U.u_c3, U.u_c4, U.u_base].forEach((u, i) => gl.uniform3fv(u, current[i]));
   gl.drawArrays(gl.TRIANGLES, 0, 3);
   settled = !moving;
+  if (settled) slow = 0;
   if (!reduced || moving) raf = requestAnimationFrame(frame);   // mouvement réduit : une image, puis repos
 }
 function wake() { if (!raf) raf = requestAnimationFrame(frame); }
@@ -109,5 +123,5 @@ addEventListener('resize', wake);
 document.addEventListener('visibilitychange', wake);
 wake();
 
-window.Shader = { setColors };
+window.Shader = { setColors, release };
 })();
