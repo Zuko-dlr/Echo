@@ -92,7 +92,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate {
                                styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
                                backing: .buffered, defer: false)
         self.window = window
-        window.title = "Verre"
+        window.title = "Écho"
         window.titleVisibility = .hidden
         window.titlebarAppearsTransparent = true
         window.backgroundColor = NSColor(red: 0.043, green: 0.063, blue: 0.149, alpha: 1)
@@ -155,15 +155,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate {
         func item(_ t: String, _ a: Selector?, _ k: String = "", _ mods: NSEvent.ModifierFlags = .command) -> NSMenuItem {
             let i = NSMenuItem(title: t, action: a, keyEquivalent: k); i.keyEquivalentModifierMask = mods; return i
         }
-        add("Verre", [
-            item("À propos de Verre", #selector(NSApplication.orderFrontStandardAboutPanel(_:))),
+        add("Écho", [
+            item("À propos d’Écho", #selector(NSApplication.orderFrontStandardAboutPanel(_:))),
             .separator(),
             item("Réglages…", #selector(openSettings), ","),
             .separator(),
-            item("Masquer Verre", #selector(NSApplication.hide(_:)), "h"),
+            item("Masquer Écho", #selector(NSApplication.hide(_:)), "h"),
             item("Masquer les autres", #selector(NSApplication.hideOtherApplications(_:)), "h", [.command, .option]),
             .separator(),
-            item("Quitter Verre", #selector(NSApplication.terminate(_:)), "q"),
+            item("Quitter Écho", #selector(NSApplication.terminate(_:)), "q"),
         ])
         add("Fichier", [item("Nouvelle playlist", #selector(newPlaylist), "n")])
         add("Édition", [

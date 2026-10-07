@@ -146,7 +146,7 @@ final class Bridge: NSObject, WKScriptMessageHandlerWithReply {
             return true
 
         default:
-            throw NSError(domain: "Verre", code: 1, userInfo: [NSLocalizedDescriptionKey: "commande inconnue : \(cmd)"])
+            throw NSError(domain: "Écho", code: 1, userInfo: [NSLocalizedDescriptionKey: "commande inconnue : \(cmd)"])
         }
     }
 

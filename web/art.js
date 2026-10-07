@@ -1,4 +1,4 @@
-/* Verre — pochettes générées pour les albums sans image, et outils de couleur. */
+/* Écho — pochettes générées pour les albums sans image, et outils de couleur. */
 (() => {
 'use strict';
 /* ---------- Couleurs & hasard reproductible ---------- */

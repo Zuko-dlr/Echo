@@ -1,4 +1,4 @@
-/* Verre — interface : musique, films et séries, lecteurs audio et vidéo.
+/* Écho — interface : musique, films et séries, lecteurs audio et vidéo.
  * Les données et les fichiers viennent du Mac (Native.call / Native.on). */
 (() => {
 'use strict';

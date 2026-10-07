@@ -25,7 +25,7 @@
     <circle cx="71" cy="64" r="6" fill="#F06A65"/><circle cx="91" cy="64" r="6" fill="#E7B84B"/><circle cx="111" cy="64" r="6" fill="#57BE71"/>
     <rect x="61" y="101" width="34" height="34" rx="11" fill="#181B29" stroke="#FFFFFF" stroke-opacity=".12"/>
     <path d="m74 109 12 9-12 9v-18Z" fill="url(#violet)"/>
-    <text x="108" y="124" fill="#F5F5FA" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="17" font-weight="650">Verre</text>
+    <text x="108" y="124" fill="#F5F5FA" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="17" font-weight="650">Écho</text>
     <text x="62" y="180" fill="#7E879B" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" letter-spacing="1.4">BIBLIOTHÈQUE</text>
     <rect x="54" y="194" width="218" height="40" rx="12" fill="#FFFFFF" fill-opacity=".09"/>
     <rect x="69" y="207" width="14" height="14" rx="3" stroke="#DAD9F8" stroke-width="1.4"/><path d="M72 211h8M72 215h8" stroke="#DAD9F8" stroke-width="1.2"/>
