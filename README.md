@@ -1,64 +1,67 @@
 <div align="center">
-  <img src="docs/echo-preview.png" alt="Aperçu d’Écho, une bibliothèque de musique et de films pour Mac" width="760">
-  <h1>Écho</h1>
-  <p><strong>Ta collection. Ton Mac. Ta façon de regarder et d’écouter.</strong></p>
-  <p>Une bibliothèque personnelle pour ta musique, tes films et tes séries.</p>
+  <img src="docs/echo-preview.png" alt="Echo, a music and movie library app for Mac" width="760">
+  <h1>Echo</h1>
+  <p><strong>My music, movies and shows, all in one place on my Mac.</strong></p>
   <p>
-    <a href="https://github.com/Zuko-dlr/Echo/releases/latest"><strong>Télécharger Écho pour Mac</strong></a>
+    <a href="https://github.com/Zuko-dlr/Echo/releases/latest"><strong>Download Echo for Mac</strong></a>
     &nbsp;·&nbsp;
-    <a href="#installer">Installation</a>
+    <a href="#install">Install</a>
     &nbsp;·&nbsp;
-    <a href="#confidentialite">Confidentialité</a>
+    <a href="#privacy">Privacy</a>
   </p>
-  <sub>macOS 14 ou ultérieur · Apple silicon · Version 1.2</sub>
+  <sub>macOS 14 or later · Apple silicon · Version 1.2</sub>
 </div>
 
 ---
 
-## Une seule bibliothèque, sans déplacer tes fichiers
+## Why I made this
 
-Écho rassemble les morceaux, films et séries des dossiers que tu choisis. Tes fichiers restent à leur place ; Écho indexe leurs informations et les lit depuis ton Mac.
+I had music in one place, movies in another and shows on an external drive, and no app I liked for all of it. So I built Echo: one library for everything, without moving any files around.
 
-| Musique | Films et séries |
+You pick your folders, Echo finds what's in them and plays it straight from your Mac.
+
+| Music | Movies and shows |
 | --- | --- |
-| Albums, artistes et morceaux | Films et épisodes depuis tes dossiers |
-| Playlists que tu peux créer et réorganiser | Affiches et informations TMDB en option |
-| Lecture des formats audio courants, dont FLAC | Lecture des formats vidéo pris en charge par macOS |
+| Albums, artists and songs | Movies and episodes from your folders |
+| Playlists you can make and reorder | Posters and info from TMDB (optional) |
+| Plays the usual audio formats, FLAC included | Plays MP4 and MOV in the app; MKV, AVI and the rest open in Elmedia Player |
 
-Les disques externes sont analysés lorsqu’ils sont branchés. Une playlist garde ses morceaux si un disque est déconnecté.
+External drives get scanned when you plug them in. If you unplug one, your playlists keep their songs.
 
-## Installer
+## Install
 
-1. Télécharge **Écho pour Mac** dans [la dernière version](https://github.com/Zuko-dlr/Echo/releases/latest).
-2. Ouvre le fichier ZIP, puis déplace `Echo.app` dans le dossier `Applications`.
-3. Ouvre Écho et choisis les dossiers de musique et de vidéos dans les réglages.
+1. Grab **Echo for Mac** from [the latest release](https://github.com/Zuko-dlr/Echo/releases/latest).
+2. Unzip it and drag `Echo.app` into your `Applications` folder.
+3. Open Echo and add your music and video folders in Settings.
 
-### Au premier lancement
+### First launch
 
-Cette version est signée ad hoc : elle n’a pas d’identité Developer ID et n’a pas été notariée par Apple. macOS peut donc avertir qu’il ne peut pas vérifier le développeur. Télécharge-la uniquement depuis ce dépôt privé et compare la somme SHA-256 jointe à la version. Si tu fais confiance au fichier, dans le Finder fais un clic droit sur `Echo.app`, choisis **Ouvrir**, puis confirme. Selon ta version de macOS, il peut ensuite falloir autoriser son ouverture dans **Réglages Système > Confidentialité et sécurité**.
+Echo isn't signed with an Apple Developer ID or notarized, so macOS will probably say it can't verify the developer. That's expected. Only download it from this repo and check that the SHA-256 matches the one on the release page.
 
-Le téléchargement et l’accès au dépôt sont privés : seuls les comptes GitHub invités au dépôt peuvent consulter cette page et ses versions. Si tu as besoin d’un accès, demande à Yuta de t’inviter avec ton nom d’utilisateur GitHub.
+To open it the first time, right-click `Echo.app` in Finder, choose **Open** and confirm. On some macOS versions you also have to allow it in **System Settings > Privacy & Security**.
 
-## Confidentialité
+This repo is private, so only people I've invited can see it and download releases. If you want access, send me your GitHub username.
 
-Ta musique et tes vidéos restent sur ton Mac. Écho ne téléverse pas les fichiers. Les affiches et renseignements de films peuvent être demandés à TMDB si tu ajoutes ta propre clé API dans les réglages. Cette intégration est facultative.
+## Privacy
 
-Écho ne fournit aucun contenu audio ou vidéo. Tu dois déjà posséder les fichiers que tu ajoutes.
+Your music and videos stay on your Mac. Echo never uploads anything. If you add your own TMDB API key in Settings, it'll fetch posters and movie info from TMDB. That part is optional.
 
-## Configuration
+Echo doesn't come with any music or videos. You need to already own the files you add.
 
-- Mac avec puce Apple (M1 ou plus récent)
-- macOS 14 Sonoma ou ultérieur
-- Environ 100 Mo pour l’application ; espace supplémentaire selon les pochettes et affiches mises en cache
+## Requirements
 
-## Créer l’application depuis les sources
+- A Mac with Apple silicon (M1 or newer)
+- macOS 14 Sonoma or later
+- About 100 MB for the app, plus some space for cached artwork and posters
+
+## Build it yourself
 
 ```sh
 ./build.sh
 ```
 
-L’application apparaît dans `build/Echo.app`. Le projet utilise Swift, AppKit, WebKit et AVFoundation ; aucune dépendance externe n’est nécessaire à la compilation.
+The app ends up in `build/Echo.app`. It's Swift, AppKit, WebKit and AVFoundation, nothing else to install.
 
-## Crédits
+## Credits
 
-Écho utilise l’API TMDB pour les affiches et les renseignements facultatifs. Ce produit utilise l’API TMDB mais n’est ni approuvé ni certifié par TMDB.
+Posters and movie info come from the TMDB API. This product uses the TMDB API but is not endorsed or certified by TMDB.
