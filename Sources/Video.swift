@@ -9,8 +9,8 @@ struct VideoFile: Codable, Hashable {
     var rel: String          // chemin relatif à la racine du volume
     var size: Int64
     var ext: String
-    var kind: String         // "movie" ou "episode"
-    var title: String        // film : titre ; épisode : nom de la série
+    var kind: String         // "movie", "episode" ou "youtube"
+    var title: String        // film : titre ; épisode : nom de la série ; YouTube : titre de la vidéo
     var year: Int?
     var season: Int?
     var episode: Int?
@@ -63,15 +63,52 @@ enum Video {
             let ext = u.pathExtension.lowercased()
             guard exts.contains(ext), let v = try? u.resourceValues(forKeys: keys), v.isRegularFile == true else { continue }
             let size = Int64(v.fileSize ?? 0)
+            let rel = u.path.hasPrefix(rootPath) ? String(u.path.dropFirst(rootPath.count)) : u.path
+            if let title = youtubeTitle(u) {   // les vidéos YouTube peuvent être courtes : pas de filtre de taille
+                out.append(VideoFile(id: sha(vol.uuid + "|" + rel), volume: vol.uuid, volumeName: vol.name, rel: rel, size: size,
+                                     ext: ext, kind: "youtube", title: title))
+                continue
+            }
             if size < 20_000_000 { continue }                                          // extraits, pubs
             if size < 400_000_000, u.deletingPathExtension().lastPathComponent.range(of: "sample", options: .caseInsensitive) != nil { continue }
-            let rel = u.path.hasPrefix(rootPath) ? String(u.path.dropFirst(rootPath.count)) : u.path
             let p = parse(u)
             out.append(VideoFile(id: sha(vol.uuid + "|" + rel), volume: vol.uuid, volumeName: vol.name, rel: rel, size: size,
                                  ext: ext, kind: p.episode != nil ? "episode" : "movie", title: p.title, year: p.year,
                                  season: p.season, episode: p.episode))
         }
         return out
+    }
+
+    // MARK: vidéos YouTube (téléchargées avec yt-dlp)
+
+    /// Nom par défaut de yt-dlp : « Titre [identifiant de 11 caractères].ext »
+    private static let youtubeIdRE = re(#"\s*\[[A-Za-z0-9_-]{11}\]$"#)
+
+    /// Titre si c'est une vidéo YouTube (nom yt-dlp, ou rangée dans un dossier « YouTube »), sinon nil
+    static func youtubeTitle(_ url: URL) -> String? {
+        let name = url.deletingPathExtension().lastPathComponent.precomposedStringWithCanonicalMapping
+        let tagged = youtubeIdRE.firstMatch(in: name, range: NSRange(name.startIndex..., in: name)) != nil
+        guard tagged || url.pathComponents.dropLast().contains(where: { $0.lowercased() == "youtube" }) else { return nil }
+        let title = replace(youtubeIdRE, name, with: "").trimmingCharacters(in: .whitespaces)
+        return title.isEmpty ? name : title
+    }
+
+    /// Titre, chaîne, date de mise en ligne et miniature écrits dans le fichier par yt-dlp
+    /// (`--embed-metadata --embed-thumbnail`) ; lisible seulement pour mp4 / m4v / mov
+    static func youtubeInfo(_ file: URL) async -> (title: String?, channel: String?, date: String?, art: Data?) {
+        var title: String?, channel: String?, date: String?, art: Data?
+        for it in (try? await AVURLAsset(url: file).load(.metadata)) ?? [] {
+            switch it.commonKey {
+            case .commonKeyTitle?: if title == nil { title = try? await it.load(.stringValue) }
+            case .commonKeyArtist?: if channel == nil { channel = try? await it.load(.stringValue) }
+            case .commonKeyCreationDate?: if date == nil { date = try? await it.load(.stringValue) }
+            case .commonKeyArtwork?: if art == nil { art = try? await it.load(.dataValue) }
+            default: break
+            }
+            // yt-dlp écrit la date de mise en ligne dans le tag iTunes « ©day »
+            if date == nil, it.identifier == .iTunesMetadataReleaseDate { date = try? await it.load(.stringValue) }
+        }
+        return (title, channel, date, art)
     }
 
     // MARK: noms de fichiers → titre, année, saison, épisode

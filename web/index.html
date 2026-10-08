@@ -123,6 +123,8 @@ h1 { font-size: 34px; font-weight: 700; letter-spacing: -.03em; line-height: 1.1
 .tile .pic img, .tile .pic .ph { width: 100%; aspect-ratio: 1; border-radius: inherit; display: block; object-fit: cover; background: var(--fill); transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform var(--sd-smooth) var(--sp-smooth); }
 .tile.tilting .pic img, .tile.tilting .pic .ph { transition: transform .1s linear; }
 .posters .tile .pic img, .posters .tile .pic .ph { aspect-ratio: 2 / 3; }
+.grid.wide { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 26px 20px; }
+.wide .tile .pic img, .wide .tile .pic .ph { aspect-ratio: 16 / 9; }
 /* reflet qui suit la souris */
 .tile .pic::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .4s;
   background: radial-gradient(60% 60% at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,.22), transparent 70%); mix-blend-mode: screen; }

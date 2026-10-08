@@ -25,6 +25,7 @@ struct MediaMeta: Codable {
     var colors: [String]?
     var episodes: [String: EpisodeMeta]?   // clé "saison-épisode"
     var verified: Bool?                    // identification confirmée (durée, ou choix manuel)
+    var channel: String?, date: String?    // vidéos YouTube : chaîne et date de mise en ligne (AAAAMMJJ)
 }
 
 // MARK: ce que reçoit l'interface
@@ -51,10 +52,15 @@ struct ShowOut: Codable {
     var poster: String?, backdrop: String?, thumb: String?, colors: [String]?, tmdbId: Int?
     var seasons: [SeasonOut]
 }
+struct YouTubeOut: Codable {
+    var id: String, title: String
+    var channel: String?, date: String?, thumb: String?, colors: [String]?
+    var file: FileOut
+}
 struct VolumeOut: Codable { var uuid: String, name: String; var mounted: Bool, external: Bool; var movies: Int, episodes: Int }
 struct SettingsOut: Codable { var musicFolders: [String], videoFolders: [String]; var hasKey: Bool }
 struct StateOut: Codable {
-    var albums: [AlbumOut], movies: [MovieOut], shows: [ShowOut], volumes: [VolumeOut]
+    var albums: [AlbumOut], movies: [MovieOut], shows: [ShowOut], youtube: [YouTubeOut], volumes: [VolumeOut]
     var playlists: [PlaylistOut]
     var settings: SettingsOut, progress: [String: Progress], status: String?
 }
@@ -268,7 +274,8 @@ final class Library {
         let movieGroups = self.movieGroups, showGroups = self.showGroups
 
         // fiches devenues inutiles (ex. faux films « Ep 1 » avant que les épisodes soient reconnus)
-        let live = Set(movieGroups.keys).union(showGroups.keys)
+        let youtube = files.filter { $0.kind == "youtube" }
+        let live = Set(movieGroups.keys).union(showGroups.keys).union(youtube.map { "yt:" + $0.id })
         if meta.keys.contains(where: { !live.contains($0) }) { meta = meta.filter { live.contains($0.key) } }
         save(meta, "meta.json")
 
@@ -318,10 +325,29 @@ final class Library {
             }
         }
 
-        // vignettes : films sans affiche, épisodes sans image
+        // vidéos YouTube : titre, chaîne, date et miniature écrits dans le fichier par yt-dlp
+        for f in youtube where meta["yt:" + f.id] == nil {
+            if Task.isCancelled { return }
+            guard Video.native.contains(f.ext), let url = resolve(f) else { continue }
+            let info = await Video.youtubeInfo(url)
+            var m = MediaMeta(title: info.title, channel: info.channel, date: info.date)
+            if let art = info.art {
+                let file = Paths.images.appendingPathComponent("yt-\(f.id).\(art.starts(with: [0x89, 0x50]) ? "png" : "jpg")")
+                if (try? art.write(to: file)) != nil {
+                    m.poster = file.path
+                    if palettes[file.path] == nil, let p = palette(of: file) { palettes[file.path] = p }
+                }
+            }
+            meta["yt:" + f.id] = m
+            save(meta, "meta.json")
+            scheduleEmit()
+        }
+
+        // vignettes : films sans affiche, épisodes sans image, vidéos YouTube sans miniature
         let needs = files.filter { f in
             guard thumbs[f.id] == nil, resolve(f) != nil else { return false }
             if f.kind == "movie" { return meta[movieKey(f)]?.poster == nil }
+            if f.kind == "youtube" { return meta["yt:" + f.id]?.poster == nil }
             return meta[showKey(f)]?.episodes?["\(f.season ?? 0)-\(f.episode ?? 0)"]?.still == nil
         }
         for (i, f) in needs.enumerated() {
@@ -626,6 +652,13 @@ final class Library {
                                  seasons: seasons.sorted { $0.n < $1.n }))
         }
 
+        let youtube = files.filter { $0.kind == "youtube" }.map { f -> YouTubeOut in
+            let m = meta["yt:" + f.id] ?? MediaMeta()
+            let thumb = m.poster ?? thumbs[f.id]
+            return YouTubeOut(id: f.id, title: m.title ?? f.title, channel: m.channel, date: m.date, thumb: url(thumb),
+                              colors: thumb.flatMap { palettes[$0] }, file: out(f))
+        }
+
         var vols: [VolumeOut] = []
         let externalUUIDs = Set(volumeNames.keys).union(mounted.values.filter { $0.external }.map(\.uuid))
         for uuid in externalUUIDs {
@@ -641,6 +674,7 @@ final class Library {
         return StateOut(albums: albums,
                         movies: movies.sorted { byTitle($0.title, $1.title) },
                         shows: shows.sorted { byTitle($0.title, $1.title) },
+                        youtube: youtube.sorted { ($0.date ?? "", $1.title) > ($1.date ?? "", $0.title) },   // plus récentes d'abord
                         volumes: vols.sorted { byTitle($0.name, $1.name) },
                         playlists: playlists.map { pl in
                             PlaylistOut(id: pl.id, name: pl.name, tracks: pl.entries.map {

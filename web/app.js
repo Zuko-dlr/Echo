@@ -59,6 +59,7 @@ const ICON = {
   note: `<svg viewBox="0 0 24 24" ${S_}><path d="M9 18V6.5l10-2.2V16"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>`,
   film: `<svg viewBox="0 0 24 24" ${S_}><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M7.5 4.5v15M16.5 4.5v15M3.5 9.5h4M3.5 14.5h4M16.5 9.5h4M16.5 14.5h4"/></svg>`,
   tv: `<svg viewBox="0 0 24 24" ${S_}><rect x="3" y="5" width="18" height="12" rx="2.5"/><path d="M8.5 20.5h7"/></svg>`,
+  youtube: `<svg viewBox="0 0 24 24" ${S_}><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9.3v5.4l4.6-2.7z"/></svg>`,
   disk: `<svg viewBox="0 0 24 24" ${S_}><rect x="3" y="7.5" width="18" height="10" rx="2.5"/><path d="M6.5 12.5h5"/><circle cx="17" cy="12.5" r=".9" fill="currentColor"/></svg>`,
   settings: `<svg viewBox="0 0 24 24" ${S_}><path d="M4 7h10M18.5 7H20M4 17h2M10.5 17H20"/><circle cx="16.2" cy="7" r="2.3"/><circle cx="8.2" cy="17" r="2.3"/></svg>`,
   back10: `<svg viewBox="0 0 24 24"><g ${S_}><path d="M12 4.5a7.5 7.5 0 1 1-7.2 5.4"/><path d="M4.2 4.8v5.1h5.1"/></g>${TEN(12.6)}</svg>`,
@@ -86,7 +87,7 @@ const vFill = $('#v-track .fill'), vKnob = $('#v-track .knob'), vPos = $('#v-pos
 const menu = $('#menu'), dialog = $('#dialog'), dlgInput = $('#dlg-input'), dlgOk = $('#dlg-ok'), dlgText = $('#dlg-text');
 
 /* ---------- Données ---------- */
-let S = { albums: [], movies: [], shows: [], volumes: [], settings: { musicFolders: [], videoFolders: [], hasKey: false }, progress: {}, status: null };
+let S = { albums: [], movies: [], shows: [], youtube: [], volumes: [], settings: { musicFolders: [], videoFolders: [], hasKey: false }, progress: {}, status: null };
 function adopt(state) {
   S = state;
   for (const a of S.albums) {
@@ -196,10 +197,10 @@ function syncNowPlaying() {
 
 /* ---------- Navigation ---------- */
 let view = 'albums', query = '';
-const TITLES = { albums: 'Albums', artists: 'Artistes', songs: 'Morceaux', movies: 'Films', shows: 'Séries' };
+const TITLES = { albums: 'Albums', artists: 'Artistes', songs: 'Morceaux', movies: 'Films', shows: 'Séries', youtube: 'YouTube' };
 
 function renderNav() {
-  const counts = { albums: S.albums.length, movies: S.movies.length, shows: S.shows.length };
+  const counts = { albums: S.albums.length, movies: S.movies.length, shows: S.shows.length, youtube: S.youtube.length };
   const item = (id, ic, label) => `<a href="#" data-view="${id}" class="${view === id ? 'on' : ''}">${ic}${label}${counts[id] ? `<span class="n">${counts[id]}</span>` : ''}</a>`;
   const disks = S.volumes.length ? S.volumes.map(v => `
       <div class="disk${v.mounted ? '' : ' off'}" title="${v.mounted ? 'Branché' : 'Débranché'}">${ICON.disk}
@@ -210,7 +211,7 @@ function renderNav() {
     <div class="sec">Musique</div>${item('albums', ICON.album, 'Albums')}${item('artists', ICON.mic, 'Artistes')}${item('songs', ICON.note, 'Morceaux')}
     <div class="sec">Playlists</div>${S.playlists.map(pl => `<a href="#" data-view="pl:${pl.id}" data-pl-drop="${pl.id}" class="${view === 'pl:' + pl.id ? 'on' : ''}">${ICON.playlist}<span class="nm">${esc(pl.name)}</span>${pl.tracks.length ? `<span class="n">${pl.tracks.length}</span>` : ''}</a>`).join('')}
     <a href="#" data-action="new-playlist" class="new">${ICON.plus}Nouvelle playlist</a>
-    <div class="sec">Vidéos</div>${item('movies', ICON.film, 'Films')}${item('shows', ICON.tv, 'Séries')}
+    <div class="sec">Vidéos</div>${item('movies', ICON.film, 'Films')}${item('shows', ICON.tv, 'Séries')}${item('youtube', ICON.youtube, 'YouTube')}
     <div class="sec">Disques</div>${disks}`);
   placeNavInd();
 }
@@ -250,10 +251,11 @@ function render(animate) {
   renderNav();
   if (view.startsWith('pl:')) return renderPlaylist(animate);
   const q = query.toLowerCase(), match = (...fields) => !q || fields.some(f => String(f || '').toLowerCase().includes(q));
-  const n = { albums: S.albums.length, movies: S.movies.length, shows: S.shows.length }[view];
+  const n = { albums: S.albums.length, movies: S.movies.length, shows: S.shows.length, youtube: S.youtube.length }[view];
   let count = '';
   if (view === 'albums' || view === 'artists' || view === 'songs') count = `${plural(S.albums.length, 'album', 'albums')} · ${plural(S.tracks.length, 'morceau', 'morceaux')}`;
   else if (view === 'movies') count = plural(n, 'film', 'films');
+  else if (view === 'youtube') count = plural(n, 'vidéo', 'vidéos');
   else count = `${plural(n, 'série', 'séries')} · ${plural(S.shows.reduce((s, x) => s + x.seasons.reduce((k, y) => k + y.episodes.length, 0), 0), 'épisode', 'épisodes')}`;
 
   let body = '';
@@ -275,6 +277,16 @@ function render(animate) {
     const list = S.tracks.filter(t => match(t.title, t.artist, t.album.title));
     body = !S.albums.length ? musicEmpty() : !list.length ? noResult()
       : `<div class="list glass">${list.map((t, i) => `<button class="row${Player.track === t ? ' current' : ''}" data-track="${t.id}" draggable="true" style="--i:${i}"><img src="${esc(albumArt(t.album, 120))}" alt="" loading="lazy"><span class="ti">${esc(t.title)}</span><span class="dim">${esc(t.artist)}</span><span class="dim">${esc(t.album.title)}</span><span class="d">${t.duration ? fmt(t.duration) : '—'}</span><span class="addto" role="button" title="Ajouter à une playlist" data-add-track="${t.id}">${ICON.plusCircle}</span></button>`).join('')}</div>`;
+  } else if (view === 'youtube') {
+    const list = S.youtube.filter(v => match(v.title, v.channel));
+    body = !S.youtube.length ? emptyCard(ICON.youtube, 'Aucune vidéo YouTube',
+        'Les vidéos téléchargées avec yt-dlp dans un dossier de vidéos (par exemple Films/YouTube) apparaissent ici toutes seules.',
+        `<button class="pill primary" data-action="add-video">${ICON.folder}Ajouter un dossier de vidéos</button>`)
+      : !list.length ? noResult()
+      : `<div class="grid wide">${list.map((v, i) => {
+          const p = S.progress[v.file.id], off = !v.file.available;
+          return `<button class="tile${off ? ' off' : ''}" data-yt="${v.id}" style="--i:${i}"><div class="pic">${posterPic(v)}${off ? `<span class="badge">${ICON.disk}Débranché</span>` : `<span class="tplay" role="button" aria-label="Lire">${ICON.play}</span>`}${pbar(p)}</div><div class="t">${esc(v.title)}${checkMark(p)}</div><div class="a">${esc([v.channel, ytDate(v.date)].filter(Boolean).join(' · '))}</div></button>`;
+        }).join('')}</div>`;
   } else {
     const isMovies = view === 'movies', all = isMovies ? S.movies : S.shows;
     const items = all.filter(x => match(x.title));
@@ -345,6 +357,7 @@ scroll.addEventListener('click', e => {
   const al = t.closest('[data-album]'); if (al) return openAlbum(S.albums.find(a => a.id === al.dataset.album));
   const ar = t.closest('[data-artist]'); if (ar) { query = ar.dataset.artist; view = 'albums'; return render(true); }
   const tr = t.closest('[data-track]'); if (tr) return Player.playList(S.tracks, S.tracks.findIndex(x => x.id === tr.dataset.track));
+  const yt = t.closest('[data-yt]'); if (yt) return playYouTube(S.youtube.find(v => v.id === yt.dataset.yt));
   const mv = t.closest('[data-movie]'); if (mv) return openMovie(S.movies.find(m => m.id === mv.dataset.movie));
   const sh = t.closest('[data-show]'); if (sh) return openShow(S.shows.find(s => s.id === sh.dataset.show));
   const rm = t.closest('[data-resume-movie]'); if (rm) return playMovie(S.movies.find(m => m.id === rm.dataset.resumeMovie));
@@ -685,6 +698,19 @@ function playMovie(m, fromStart) {
   if (!f.native) return Native.call('openExternal', { path: f.path });
   const p = S.progress[f.id];
   VP.open({ id: f.id, url: f.url, path: f.path, title: m.title, sub: movieLine(m, true) }, !fromStart && resumable(p) ? p.pos : 0);
+}
+// vidéo YouTube : lecture directe, reprise là où on s'était arrêté
+function playYouTube(v) {
+  const f = v && v.file;
+  if (!f || !f.available) return;
+  if (!f.native) return Native.call('openExternal', { path: f.path });
+  const p = S.progress[f.id];
+  VP.open({ id: f.id, url: f.url, path: f.path, title: v.title, sub: v.channel || 'YouTube' }, resumable(p) ? p.pos : 0);
+}
+// date de mise en ligne écrite par yt-dlp (AAAAMMJJ) → « 8 oct. 2026 »
+function ytDate(d) {
+  const s = String(d || '').replace(/-/g, '').slice(0, 8);
+  return /^\d{8}$/.test(s) ? new Date(+s.slice(0, 4), +s.slice(4, 6) - 1, +s.slice(6)).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
 }
 function playEpisode(s, ep, fromStart) {
   if (!ep || !ep.file.available) return;
