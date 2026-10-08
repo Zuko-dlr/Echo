@@ -1,17 +1,17 @@
-## Écho 1.2.0
+## Echo 1.2.0
 
-Nouvel écran d’ouverture : un trait de lumière s’ouvre en grand écran lumineux, « ECHO » s’y forme en pixels éblouissants avec son reflet au sol, puis l’écran fond dans sa propre lumière, d’où naît le fond de l’app. Un clic ou une touche permet de le passer.
+New intro. When Echo opens, a thin line of light opens up into a big glowing screen, "ECHO" lights up in pixels with its reflection on the floor, then the screen melts into its own light and the app's background comes out of it. Click or press any key if you want to skip it.
 
-Le fond d’Écho prend désormais par défaut les teintes de cette ouverture (rose, pêche, prune et ambre), plus profondes et plus lisibles ; quand un morceau joue, il glisse toujours vers les couleurs de sa pochette. L’interface est prête plus vite (environ 3 secondes après l’ouverture).
+The default background now uses the same colors as the intro (pink, peach, plum and amber). It's deeper and easier to read on. When a song is playing, it still fades to the colors of the album cover. The app is also ready faster, about 3 seconds after launch.
 
-- Accessibilité : un seul éclat lumineux, doux, sans flash rapide ni scintillement. L’ouverture est sautée si macOS est réglé sur « Réduire les animations », si VoiceOver est activé ou si la fenêtre est cachée au lancement.
-- Corrections : la touche Espace utilisée pour passer l’ouverture ne lance plus la lecture ; les boutons de la fenêtre ne réagissent plus aux clics tant qu’ils sont invisibles ; le titre « Albums » ne chevauche plus son compteur pendant l’apparition de l’interface.
+- Accessibility: there's only one soft flash, no fast flashing or flickering. The intro is skipped if Reduce Motion is on in macOS, if VoiceOver is running, or if the window is hidden at launch.
+- Fixes: pressing Space to skip the intro doesn't start playback anymore, the window buttons don't react to clicks while they're hidden, and the "Albums" title no longer overlaps its counter while the app loads in.
 
-Aucun changement dans la gestion des fichiers : la bibliothèque, les playlists et les positions de lecture des versions précédentes sont conservées.
+Nothing changed in how your files are handled. Your library, playlists and playback positions from previous versions are all still there.
 
-- Mac avec puce Apple (arm64)
-- macOS 14 Sonoma ou ultérieur
-- Archive : `Echo-1.2-macOS-arm64.zip`
-- Somme SHA-256 : voir le fichier `Echo-1.2-macOS-arm64.zip.sha256` joint
+- Mac with Apple silicon (arm64)
+- macOS 14 Sonoma or later
+- Download: `Echo-1.2-macOS-arm64.zip`
+- SHA-256: see the attached `Echo-1.2-macOS-arm64.zip.sha256` file
 
-La version est signée ad hoc, sans certificat Developer ID ni notarisation Apple. Téléchargez l’archive depuis ce dépôt privé et vérifiez la somme avant de l’ouvrir (clic droit → Ouvrir au premier lancement).
+This build is signed ad hoc, without a Developer ID or Apple notarization. Only download it from this repo and check the SHA-256 before opening it. The first time, right-click the app and choose Open.

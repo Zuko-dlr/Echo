@@ -1,12 +1,12 @@
-## Écho 1.1.0
+## Echo 1.1.0
 
-Nouvelle interface : fond vivant qui ondule aux couleurs de la pochette ou de l’affiche en cours, matériaux sombres translucides, grands titres, et des animations fluides partout (pochette qui vole vers sa fiche, lecteur qui s’ouvre en grand, vignettes qui s’inclinent sous la souris, apparitions en cascade). Les animations sont coupées si macOS est réglé sur « Réduire les animations ».
+New look. The background now moves and ripples in the colors of whatever album or movie is playing. There are dark see-through panels, big titles and smooth animations everywhere: covers fly into their page, the player opens up full size, tiles tilt under your mouse and things fade in one after another. All of it turns off if Reduce Motion is on in macOS.
 
-Aucun changement dans la gestion des fichiers : la bibliothèque, les playlists et les positions de lecture de la version 1.0 sont conservées.
+Nothing changed in how your files are handled. Your library, playlists and playback positions from 1.0 are all still there.
 
-- Mac avec puce Apple (arm64)
-- macOS 14 Sonoma ou ultérieur
-- Archive : `Echo-1.1-macOS-arm64.zip`
-- Somme SHA-256 : voir le fichier `Echo-1.1-macOS-arm64.zip.sha256` joint
+- Mac with Apple silicon (arm64)
+- macOS 14 Sonoma or later
+- Download: `Echo-1.1-macOS-arm64.zip`
+- SHA-256: see the attached `Echo-1.1-macOS-arm64.zip.sha256` file
 
-La version est signée ad hoc, sans certificat Developer ID ni notarisation Apple. Téléchargez l’archive depuis ce dépôt privé et vérifiez la somme avant de l’ouvrir (clic droit → Ouvrir au premier lancement).
+This build is signed ad hoc, without a Developer ID or Apple notarization. Only download it from this repo and check the SHA-256 before opening it. The first time, right-click the app and choose Open.
