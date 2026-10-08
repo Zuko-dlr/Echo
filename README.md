@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/echo-preview.png" alt="Echo, a music and movie library app for Mac" width="760">
+  <img src="docs/echo-launch.webp" alt="Echo launching: the ECHO intro, then the music library" width="760">
   <h1>Echo</h1>
   <p><strong>My music, movies and shows, all in one place on my Mac.</strong></p>
   <p>
