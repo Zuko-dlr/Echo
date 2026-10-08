@@ -1,5 +1,8 @@
 <div align="center">
-  <img src="docs/echo-launch.webp" alt="Echo launching: the ECHO intro, then the music library" width="760">
+  <picture>
+    <source media="(min-width: 768px)" srcset="docs/echo-launch.webp">
+    <img src="docs/echo-launch-mobile.webp" alt="Echo launching: the ECHO intro, then the music library" width="760">
+  </picture>
   <h1>Echo</h1>
   <p><strong>My music, movies and shows, all in one place on my Mac.</strong></p>
   <p>
