@@ -12,7 +12,7 @@
     &nbsp;·&nbsp;
     <a href="#privacy">Privacy</a>
   </p>
-  <sub>macOS 14 or later · Apple silicon · Version 1.2</sub>
+  <sub>macOS 14 or later · Apple silicon · Version 1.3</sub>
 </div>
 
 ---
@@ -30,6 +30,8 @@ You pick your folders, Echo finds what's in them and plays it straight from your
 | Plays the usual audio formats, FLAC included | Plays MP4 and MOV in the app; MKV, AVI and the rest open in Elmedia Player |
 
 External drives get scanned when you plug them in. If you unplug one, your playlists keep their songs.
+
+There's also a YouTube tab for videos I've downloaded with yt-dlp. It shows the thumbnail, channel and upload date that yt-dlp saves in the file.
 
 ## Install
 
