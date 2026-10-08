@@ -148,8 +148,6 @@ function safePalette(colors) {
 }
 function paint(colors) {
   const c = safePalette(colors) || DEFAULT, def = c === DEFAULT;
-  ['--c1', '--c2', '--c3'].forEach((k, i) => wall.style.setProperty(k, c[i]));
-  wall.style.setProperty('--c4', def ? DEFAULT_C4 : Art.mix(c[3], c[0], .5));
   // fond presque noir : le halo coloré reste un halo, le texte et le verre restent lisibles
   const base = def ? c[3] : Art.mix(c[3], '#000000', .6);
   wall.style.setProperty('--base', base);

@@ -1,6 +1,6 @@
 /* Écho — fond vivant en WebGL : un dégradé fluide (bruit déformé, comme shadergradient.co)
  * aux couleurs de la pochette ou de l'affiche en cours. Sans dépendance.
- * Si WebGL manque, on garde les taches floues en CSS (.blobs). */
+ * Sans WebGL, le fond reste uni (couleur --base). */
 (() => {
 'use strict';
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -64,13 +64,12 @@ try {
   gl.attachShader(prog, shader(gl.VERTEX_SHADER, VERT)); gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, FRAG));
   gl.linkProgram(prog);
   if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
-} catch (e) { canvas.remove(); return; }   // repli : les taches CSS restent affichées
+} catch (e) { canvas.remove(); return; }   // repli : fond uni
 gl.useProgram(prog);
 const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
 const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 const U = Object.fromEntries(['u_res', 'u_time', 'u_c1', 'u_c2', 'u_c3', 'u_c4', 'u_base'].map(n => [n, gl.getUniformLocation(prog, n)]));
-wall.classList.add('webgl');
 
 /* ---------- Couleurs : « #rrggbb » ou « rgb(r, g, b) » → [0..1], fondu doux vers la nouvelle palette ---------- */
 function parse(c) {

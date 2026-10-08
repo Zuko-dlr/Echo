@@ -14,20 +14,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Compiler Echo.app
-        run: ./build.sh
-
-      - name: Fabriquer l'archive et la somme de contrôle
+      - name: Compiler Echo.app, fabriquer l'archive et la somme de contrôle
         id: pack
         run: |
+          ./release.sh
           version=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" Info.plist)
-          mkdir -p dist
-          zip="Echo-${version}-macOS-arm64.zip"
-          ditto -c -k --keepParent build/Echo.app "dist/$zip"
-          (cd dist && shasum -a 256 "$zip" > "$zip.sha256")
-          cat "dist/$zip.sha256"
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "zip=$zip" >> "$GITHUB_OUTPUT"
+          echo "zip=Echo-${version}-macOS-arm64.zip" >> "$GITHUB_OUTPUT"
 
       - name: Créer la release sur GitHub
         env:

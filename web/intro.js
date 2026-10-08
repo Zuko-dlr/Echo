@@ -199,7 +199,7 @@ function frameAt(t) {
   };
 }
 
-let t = 0, last = 0, speed = 1, handed = false, frozen = false;
+let t = 0, last = 0, speed = 1, handed = false;
 function draw(at) {
   const s = frameAt(at);
   gl.uniform2f(U.res, canvas.width, canvas.height);
@@ -218,7 +218,6 @@ function handoff(fast) {
   finish();
 }
 function tick(now) {
-  if (frozen) return;
   const dt = last ? Math.min((now - last) / 1000, 1 / 30) : 0;   // un à-coup ralentit l'animation au lieu de la sauter
   last = now;
   t += dt * speed;
@@ -241,6 +240,4 @@ function onKey(e) {
 box.addEventListener('pointerdown', skip);
 addEventListener('keydown', onKey, true);
 requestAnimationFrame(tick);
-// image fixe pour vérifier le rendu (développement) : Intro.frame(1.2) dans une page de test
-window.Intro.frame = at => { frozen = true; draw(at); };
 })();
