@@ -40,8 +40,6 @@ Echo isn't signed with an Apple Developer ID or notarized, so macOS will probabl
 
 To open it the first time, right-click `Echo.app` in Finder, choose **Open** and confirm. On some macOS versions you also have to allow it in **System Settings > Privacy & Security**.
 
-This repo is private, so only people I've invited can see it and download releases. If you want access, send me your GitHub username.
-
 ## Privacy
 
 Your music and videos stay on your Mac. Echo never uploads anything. If you add your own TMDB API key in Settings, it'll fetch posters and movie info from TMDB. That part is optional.
