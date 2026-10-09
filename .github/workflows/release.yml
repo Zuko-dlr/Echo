@@ -27,9 +27,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           v="${{ steps.pack.outputs.version }}"
-          tag="v${v}.0"
-          notes="docs/RELEASE-${v}.0.md"
-          [ -f "$notes" ] || { printf '## Echo %s.0\n' "$v" > /tmp/notes.md; notes=/tmp/notes.md; }
+          case "$v" in *.*.*) ;; *) v="$v.0" ;; esac   # 1.3 → 1.3.0 ; 1.3.1 reste 1.3.1
+          tag="v$v"
+          notes="docs/RELEASE-$v.md"
+          [ -f "$notes" ] || { printf '## Echo %s\n' "$v" > /tmp/notes.md; notes=/tmp/notes.md; }
           # somme de contrôle écrite dans le texte de la release, comme pour la 1.0
           sum=$(cut -d' ' -f1 "dist/${{ steps.pack.outputs.zip }}.sha256")
           sed "s|see the attached \`.*\.sha256\` file|\`$sum\`|" "$notes" > /tmp/notes-final.md
@@ -37,6 +38,6 @@ jobs:
             gh release upload "$tag" dist/* --clobber
             gh release edit "$tag" --notes-file /tmp/notes-final.md
           else
-            gh release create "$tag" dist/* --title "Echo ${v}.0" --notes-file /tmp/notes-final.md --target "$GITHUB_SHA"
+            gh release create "$tag" dist/* --title "Echo $v" --notes-file /tmp/notes-final.md --target "$GITHUB_SHA"
           fi
           echo "Release $tag publiée : https://github.com/${GITHUB_REPOSITORY}/releases/tag/$tag"

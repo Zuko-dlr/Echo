@@ -12,7 +12,7 @@
     &nbsp;·&nbsp;
     <a href="#privacy">Privacy</a>
   </p>
-  <sub>macOS 14 or later · Apple silicon · Version 1.3</sub>
+  <sub>macOS 14 or later · Apple silicon · Version 1.3.1</sub>
 </div>
 
 ---
