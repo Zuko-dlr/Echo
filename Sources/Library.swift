@@ -429,6 +429,8 @@ final class Library {
                 guard let id = r["id"] as? Int else { continue }
                 var score = 10 - Double(rank) * 0.6
                 if anim { score += (r["genre_ids"] as? [Int] ?? []).contains(16) ? 4 : -2 }
+                // la série la plus connue d'abord : évite les dérivés (« Junior High ») qui ont aussi assez d'épisodes
+                score += min(5, log10(Double(r["vote_count"] as? Int ?? 0) + 1))
                 scored.append((id, score, false))
             }
             for i in scored.indices.sorted(by: { scored[$0].score > scored[$1].score }).prefix(4) {
