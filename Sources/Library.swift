@@ -26,6 +26,7 @@ struct MediaMeta: Codable {
     var episodes: [String: EpisodeMeta]?   // clé "saison-épisode"
     var verified: Bool?                    // identification confirmée (durée, ou choix manuel)
     var channel: String?, date: String?    // vidéos YouTube : chaîne et date de mise en ligne (AAAAMMJJ)
+    var lang: String?                      // langue originale (TMDB) : « ja » + genre Animation = anime
 }
 
 // MARK: ce que reçoit l'interface
@@ -39,6 +40,7 @@ struct MovieOut: Codable {
     var year: Int?, overview: String?, runtime: Int?, genres: [String], rating: Double?
     var poster: String?, backdrop: String?, thumb: String?, colors: [String]?, tmdbId: Int?
     var files: [FileOut]
+    var anime: Bool
 }
 struct EpisodeOut: Codable {
     var id: String, s: Int, e: Int, title: String
@@ -51,6 +53,7 @@ struct ShowOut: Codable {
     var year: Int?, overview: String?, genres: [String], rating: Double?
     var poster: String?, backdrop: String?, thumb: String?, colors: [String]?, tmdbId: Int?
     var seasons: [SeasonOut]
+    var anime: Bool
 }
 struct YouTubeOut: Codable {
     var id: String, title: String
@@ -280,6 +283,13 @@ final class Library {
         save(meta, "meta.json")
 
         if tmdb.key != nil {
+            // langue originale absente des fiches faites avant l'onglet Anime : relue (cache TMDB de 30 jours)
+            for (key, m) in meta where m.lang == nil {
+                guard let id = m.tmdbId else { continue }
+                if Task.isCancelled { return }
+                let d = try? await tmdb.details(key.hasPrefix("tv:") ? "tv" : "movie", id)
+                meta[key]?.lang = d?["original_language"] as? String ?? ""
+            }
             // identifications faites sans vérifier la durée : si le film trouvé n'a pas la durée du fichier,
             // c'était le mauvais (ex. « Avatar » 2009 au lieu du film d'animation) → on cherche à nouveau
             for (key, group) in movieGroups where settings.matches[key] == nil {
@@ -439,6 +449,7 @@ final class Library {
     private func common(_ d: [String: Any], _ m: inout MediaMeta) async {
         m.overview = d["overview"] as? String
         m.genres = (d["genres"] as? [[String: Any]])?.compactMap { $0["name"] as? String }
+        m.lang = d["original_language"] as? String ?? ""
         if let r = d["vote_average"] as? Double, r > 0 { m.rating = r }
         let poster = await tmdb.image(d["poster_path"] as? String, size: "w500")
         let backdrop = await tmdb.image(d["backdrop_path"] as? String, size: "w1280")
@@ -608,6 +619,11 @@ final class Library {
 
     func emitState() { onEvent?("state", stateJSON()) }
 
+    /// Anime : rangé dans un dossier « Anime », ou animation japonaise selon TMDB
+    private func isAnime(_ group: [VideoFile], _ m: MediaMeta) -> Bool {
+        group.contains { Video.animeFolder($0.rel) } || (m.lang == "ja" && (m.genres ?? []).contains("Animation"))
+    }
+
     func stateJSON() -> String {
         let fm = FileManager.default
         func url(_ p: String?) -> String? { p.map(mediaURL) }
@@ -629,7 +645,8 @@ final class Library {
             movies.append(MovieOut(id: sha(key), key: key, title: cleanTitle(m.title ?? group[0].title), year: m.year ?? group[0].year,
                                    overview: m.overview, runtime: m.runtime, genres: m.genres ?? [], rating: m.rating,
                                    poster: url(m.poster), backdrop: url(m.backdrop), thumb: url(thumb),
-                                   colors: m.colors ?? thumb.flatMap { palettes[$0] }, tmdbId: m.tmdbId, files: outs))
+                                   colors: m.colors ?? thumb.flatMap { palettes[$0] }, tmdbId: m.tmdbId, files: outs,
+                                   anime: isAnime(group, m)))
         }
         var shows: [ShowOut] = []
         for (key, group) in showGroups {
@@ -649,7 +666,7 @@ final class Library {
             shows.append(ShowOut(id: sha(key), key: key, title: cleanTitle(m.title ?? group[0].title), year: m.year, overview: m.overview,
                                  genres: m.genres ?? [], rating: m.rating, poster: url(m.poster), backdrop: url(m.backdrop),
                                  thumb: url(thumb), colors: m.colors ?? thumb.flatMap { palettes[$0] }, tmdbId: m.tmdbId,
-                                 seasons: seasons.sorted { $0.n < $1.n }))
+                                 seasons: seasons.sorted { $0.n < $1.n }, anime: isAnime(group, m)))
         }
 
         let youtube = files.filter { $0.kind == "youtube" }.map { f -> YouTubeOut in

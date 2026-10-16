@@ -125,6 +125,10 @@ enum Video {
     private static let showSeasonRE = re(#"(?i)^(.*?)[\s._\-]+(?:saison|season|s)[\s._\-]*(\d{1,2})$"#)
     private static let yearRE = re(#"^(.*?)[\s._\(\[\-]+((?:19|20)\d{2})(?:[\s._\)\]]|$)"#)
     private static let durationRE = re(#"Duration: (\d+):(\d+):(\d+(?:\.\d+)?)"#)
+    /// Épisode d'anime nommé par un groupe de sous-titrage : « [Groupe] Titre - 01 [1080p][…] »
+    private static let fansubRE = re(#"^\s*\[[^\]]+\]\s*(.+?)\s+-\s+(\d{1,4})(?:v\d)?(?:\s|\[|\(|$)"#)
+    /// Dossiers qui ne portent pas le nom d'une série
+    private static let genericDirs: Set<String> = ["anime", "animes", "series", "serie", "tv", "videos", "movies", "films", "downloads", "telechargements"]
 
     private static func replace(_ re: NSRegularExpression, _ s: String, with t: String) -> String {
         re.stringByReplacingMatches(in: s, range: NSRange(s.startIndex..., in: s), withTemplate: t)
@@ -157,6 +161,12 @@ enum Video {
             if show.count < 2 { show = clean(seasonDir != nil ? grand : parent) }
             return (show, nil, Int(m[2] ?? ""), Int(m[3] ?? ""))
         }
+        // Anime : « [Groupe] Titre - 01 [1080p] » ; la série est le dossier parent, sauf dossier générique (« Anime »…)
+        if let m = match(fansubRE, name) {
+            let dir = seasonDir != nil ? grand : parent
+            let show = genericDirs.contains(normalized(dir)) ? clean(m[1] ?? "") : clean(dir)
+            return (show, nil, Int(seasonDir?[1] ?? "") ?? 1, Int(m[2] ?? ""))
+        }
         // Épisode nommé seul : « Ep 1 », « EP01 », « Épisode 3 », « E03 » (ou « 03 - Titre » dans un dossier de saison)
         let epToken = match(episodeRE, name)
         if let sd = seasonDir, let e = epToken ?? match(leadingNumberRE, name) {
@@ -187,6 +197,11 @@ enum Video {
     static func animationHint(_ rel: String) -> Bool {
         let words: Set<String> = ["anime", "animes", "animation", "animations", "dessin anime", "dessins animes", "cartoon", "cartoons"]
         return rel.split(separator: "/").dropLast().contains { words.contains(normalized(String($0))) }
+    }
+
+    /// Rangé dans un dossier « Anime » ou « Animés » : va dans l'onglet Anime
+    static func animeFolder(_ rel: String) -> Bool {
+        rel.split(separator: "/").dropLast().contains { ["anime", "animes"].contains(normalized(String($0))) }
     }
 
     /// Durée en secondes (AVFoundation pour mp4/mov, ffmpeg pour mkv/avi…)

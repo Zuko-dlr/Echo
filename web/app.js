@@ -59,6 +59,7 @@ const ICON = {
   note: `<svg viewBox="0 0 24 24" ${S_}><path d="M9 18V6.5l10-2.2V16"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg>`,
   film: `<svg viewBox="0 0 24 24" ${S_}><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M7.5 4.5v15M16.5 4.5v15M3.5 9.5h4M3.5 14.5h4M16.5 9.5h4M16.5 14.5h4"/></svg>`,
   tv: `<svg viewBox="0 0 24 24" ${S_}><rect x="3" y="5" width="18" height="12" rx="2.5"/><path d="M8.5 20.5h7"/></svg>`,
+  anime: `<svg viewBox="0 0 24 24" ${S_}><path d="M12 3.5c.6 4.4 2.2 6 6.5 6.5-4.3.6-5.9 2.2-6.5 6.5-.6-4.3-2.2-5.9-6.5-6.5 4.3-.5 5.9-2.1 6.5-6.5z"/><path d="M18.5 15.5c.2 1.6.8 2.2 2.3 2.4-1.5.2-2.1.8-2.3 2.3-.2-1.5-.8-2.1-2.3-2.3 1.5-.2 2.1-.8 2.3-2.4z"/></svg>`,
   youtube: `<svg viewBox="0 0 24 24" ${S_}><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9.3v5.4l4.6-2.7z"/></svg>`,
   disk: `<svg viewBox="0 0 24 24" ${S_}><rect x="3" y="7.5" width="18" height="10" rx="2.5"/><path d="M6.5 12.5h5"/><circle cx="17" cy="12.5" r=".9" fill="currentColor"/></svg>`,
   settings: `<svg viewBox="0 0 24 24" ${S_}><path d="M4 7h10M18.5 7H20M4 17h2M10.5 17H20"/><circle cx="16.2" cy="7" r="2.3"/><circle cx="8.2" cy="17" r="2.3"/></svg>`,
@@ -197,10 +198,13 @@ function syncNowPlaying() {
 
 /* ---------- Navigation ---------- */
 let view = 'albums', query = '';
-const TITLES = { albums: 'Albums', artists: 'Artistes', songs: 'Morceaux', movies: 'Films', shows: 'Séries', youtube: 'YouTube' };
+const TITLES = { albums: 'Albums', artists: 'Artistes', songs: 'Morceaux', movies: 'Films', shows: 'Séries', anime: 'Anime', youtube: 'YouTube' };
+// les animes (dossier « Anime », ou animation japonaise selon TMDB) ont leur onglet et quittent Films et Séries
+const videoList = v => v === 'anime' ? [...S.movies, ...S.shows].filter(x => x.anime).sort((a, b) => a.title.localeCompare(b.title, 'fr'))
+  : (v === 'movies' ? S.movies : S.shows).filter(x => !x.anime);
 
 function renderNav() {
-  const counts = { albums: S.albums.length, movies: S.movies.length, shows: S.shows.length, youtube: S.youtube.length };
+  const counts = { albums: S.albums.length, movies: videoList('movies').length, shows: videoList('shows').length, anime: videoList('anime').length, youtube: S.youtube.length };
   const item = (id, ic, label) => `<a href="#" data-view="${id}" class="${view === id ? 'on' : ''}">${ic}${label}${counts[id] ? `<span class="n">${counts[id]}</span>` : ''}</a>`;
   const disks = S.volumes.length ? S.volumes.map(v => `
       <div class="disk${v.mounted ? '' : ' off'}" title="${v.mounted ? 'Branché' : 'Débranché'}">${ICON.disk}
@@ -211,7 +215,7 @@ function renderNav() {
     <div class="sec">Musique</div>${item('albums', ICON.album, 'Albums')}${item('artists', ICON.mic, 'Artistes')}${item('songs', ICON.note, 'Morceaux')}
     <div class="sec">Playlists</div>${S.playlists.map(pl => `<a href="#" data-view="pl:${pl.id}" data-pl-drop="${pl.id}" class="${view === 'pl:' + pl.id ? 'on' : ''}">${ICON.playlist}<span class="nm">${esc(pl.name)}</span>${pl.tracks.length ? `<span class="n">${pl.tracks.length}</span>` : ''}</a>`).join('')}
     <a href="#" data-action="new-playlist" class="new">${ICON.plus}Nouvelle playlist</a>
-    <div class="sec">Vidéos</div>${item('movies', ICON.film, 'Films')}${item('shows', ICON.tv, 'Séries')}${item('youtube', ICON.youtube, 'YouTube')}
+    <div class="sec">Vidéos</div>${item('movies', ICON.film, 'Films')}${item('shows', ICON.tv, 'Séries')}${item('anime', ICON.anime, 'Anime')}${item('youtube', ICON.youtube, 'YouTube')}
     <div class="sec">Disques</div>${disks}`);
   placeNavInd();
 }
@@ -251,12 +255,13 @@ function render(animate) {
   renderNav();
   if (view.startsWith('pl:')) return renderPlaylist(animate);
   const q = query.toLowerCase(), match = (...fields) => !q || fields.some(f => String(f || '').toLowerCase().includes(q));
-  const n = { albums: S.albums.length, movies: S.movies.length, shows: S.shows.length, youtube: S.youtube.length }[view];
+  const n = view === 'youtube' ? S.youtube.length : view === 'albums' ? S.albums.length : videoList(view).length;
   let count = '';
   if (view === 'albums' || view === 'artists' || view === 'songs') count = `${plural(S.albums.length, 'album', 'albums')} · ${plural(S.tracks.length, 'morceau', 'morceaux')}`;
   else if (view === 'movies') count = plural(n, 'film', 'films');
   else if (view === 'youtube') count = plural(n, 'vidéo', 'vidéos');
-  else count = `${plural(n, 'série', 'séries')} · ${plural(S.shows.reduce((s, x) => s + x.seasons.reduce((k, y) => k + y.episodes.length, 0), 0), 'épisode', 'épisodes')}`;
+  else if (view === 'anime') { const f = videoList('anime').filter(x => !x.seasons).length; count = `${plural(f, 'film', 'films')} · ${plural(n - f, 'série', 'séries')}`; }
+  else count = `${plural(n, 'série', 'séries')} · ${plural(videoList('shows').reduce((s, x) => s + x.seasons.reduce((k, y) => k + y.episodes.length, 0), 0), 'épisode', 'épisodes')}`;
 
   let body = '';
   const musicEmpty = () => emptyCard(ICON.note, 'Aucune musique pour l’instant',
@@ -288,17 +293,20 @@ function render(animate) {
           return `<button class="tile${off ? ' off' : ''}" data-yt="${v.id}" style="--i:${i}"><div class="pic">${posterPic(v)}${off ? `<span class="badge">${ICON.disk}Débranché</span>` : `<span class="tplay" role="button" aria-label="Lire">${ICON.play}</span>`}${pbar(p)}</div><div class="t">${esc(v.title)}${checkMark(p)}</div><div class="a">${esc([v.channel, ytDate(v.date)].filter(Boolean).join(' · '))}</div></button>`;
         }).join('')}</div>`;
   } else {
-    const isMovies = view === 'movies', all = isMovies ? S.movies : S.shows;
+    const isMovies = view === 'movies', isAnime = view === 'anime', all = videoList(view);
     const items = all.filter(x => match(x.title));
-    if (!all.length) {
+    if (!all.length && isAnime) {
+      body = emptyCard(ICON.anime, 'Aucun anime trouvé', 'Rangez vos animés dans un dossier « Anime » : ils apparaissent ici. Avec la clé TMDB, les films et séries d’animation japonais y viennent aussi tout seuls.');
+    } else if (!all.length) {
       body = emptyCard(isMovies ? ICON.film : ICON.tv, isMovies ? 'Aucun film trouvé' : 'Aucune série trouvée',
         `Branchez le disque qui contient vos ${isMovies ? 'films' : 'séries'} : il est détecté automatiquement. Vous pouvez aussi ajouter un dossier du Mac.`,
         `<button class="pill primary" data-action="add-video">${ICON.folder}Ajouter un dossier de vidéos</button>`);
     } else if (!items.length) body = noResult();
     else {
       if (!S.settings.hasKey) body += `<div class="banner glass" style="--i:0"><p><b>Affiches et résumés</b> : ajoutez votre clé TMDB pour afficher les vraies affiches, les résumés et le nom des épisodes.</p><button class="pill primary" data-action="settings">Ajouter la clé</button></div>`;
-      if (!query) body += continueShelf(isMovies);
+      if (!query && !isAnime) body += continueShelf(isMovies);
       body += `<div class="grid posters">${items.map((x, i) => {
+        const isMovies = !x.seasons;   // l'onglet Anime mélange films et séries
         const off = isMovies ? !x.files.some(f => f.available) : !x.seasons.some(s => s.episodes.some(e => e.file.available));
         const sub = isMovies ? (x.year || '') : plural(x.seasons.length, 'saison', 'saisons');
         const p = isMovies && x.files[0] ? S.progress[x.files[0].id] : null;
