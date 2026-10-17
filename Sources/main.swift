@@ -132,6 +132,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, WKNavigationDelegate {
 
     func applicationShouldTerminateAfterLastWindowClosed(_ app: NSApplication) -> Bool { true }
 
+    // retour depuis Elmedia : les épisodes vus là-bas reçoivent leur coche
+    func applicationDidBecomeActive(_ note: Notification) { if library.syncElmedia() { library.emitState() } }
+
     // Sécurité : la fenêtre n'affiche que l'interface de Verre. Tout autre chargement est refusé
     // (ex. un fichier glissé sur la fenêtre) ; les liens web éventuels s'ouvrent dans le navigateur.
     private var interfaceLoaded = false

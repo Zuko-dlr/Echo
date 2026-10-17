@@ -1,4 +1,5 @@
 import AppKit
+import SQLite3
 
 struct Settings: Codable {
     var musicFolders: [String]
@@ -140,6 +141,7 @@ final class Library {
             if Task.isCancelled { return }
             await scanVideos()
             if Task.isCancelled { return }
+            syncElmedia()
             emitState()
             await enrich()
             if Task.isCancelled { return }
@@ -616,6 +618,48 @@ final class Library {
     func saveProgress(_ id: String, _ pos: Double, _ dur: Double) {
         progress[id] = Progress(pos: pos, dur: dur, at: Date().timeIntervalSince1970)
         writeJSON(progress, "progress.json")
+    }
+
+    /// Vidéos lues dans Elmedia Player (MKV…) : position et « vu » repris de sa liste de lecture
+    @discardableResult func syncElmedia() -> Bool {
+        var byPath: [String: (pos: Double, dur: Double)] = [:], byName = byPath
+        for r in Self.elmediaPlaylist() {   // dans l'ordre de lecture : la dernière ligne d'un fichier l'emporte
+            byPath[r.path] = (r.pos, r.dur)
+            byName[(r.path as NSString).lastPathComponent] = (r.pos, r.dur)
+        }
+        let names = Dictionary(grouping: files) { ($0.rel as NSString).lastPathComponent.precomposedStringWithCanonicalMapping }
+        var changed = false
+        for f in files where !Video.native.contains(f.ext) {
+            guard let path = resolve(f)?.path.precomposedStringWithCanonicalMapping else { continue }
+            // fichier déplacé depuis (ex. rangé dans « Saison 1 ») : retrouvé par son nom, s'il est unique
+            let name = (path as NSString).lastPathComponent
+            guard let e = byPath[path] ?? (names[name]?.count == 1 ? byName[name] : nil), e.dur > 0 else { continue }
+            if let p = progress[f.id], p.pos == e.pos, p.dur == e.dur { continue }
+            progress[f.id] = Progress(pos: e.pos, dur: e.dur, at: Date().timeIntervalSince1970)
+            changed = true
+        }
+        if changed { writeJSON(progress, "progress.json") }
+        return changed
+    }
+
+    /// Liste de lecture d'Elmedia : durée et dernière position de chaque fichier, même une fois fini
+    /// (sa base de reprise, elle, oublie les fichiers terminés). Version hors App Store seulement :
+    /// lire le dossier d'une app sandboxée ferait apparaître une demande d'autorisation.
+    private static func elmediaPlaylist() -> [(path: String, pos: Double, dur: Double)] {
+        let path = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support/Elmedia Player/Playlist.db").path
+        guard FileManager.default.fileExists(atPath: path) else { return [] }
+        var db: OpaquePointer?, st: OpaquePointer?
+        defer { sqlite3_finalize(st); sqlite3_close(db) }
+        guard sqlite3_open_v2(path, &db, SQLITE_OPEN_READONLY, nil) == SQLITE_OK else { return [] }
+        sqlite3_busy_timeout(db, 500)
+        // ponytail: ordre d'ajout = ordre de lecture ; une ancienne ligne relancée depuis la liste d'Elmedia ne gagne pas
+        guard sqlite3_prepare_v2(db, "SELECT path, length, last_position FROM playlist_items ORDER BY id", -1, &st, nil) == SQLITE_OK else { return [] }
+        var out: [(path: String, pos: Double, dur: Double)] = []
+        while sqlite3_step(st) == SQLITE_ROW {
+            guard let c = sqlite3_column_text(st, 0) else { continue }
+            out.append((String(cString: c).precomposedStringWithCanonicalMapping, sqlite3_column_double(st, 2), sqlite3_column_double(st, 1)))
+        }
+        return out
     }
 
     // MARK: état envoyé à l'interface
