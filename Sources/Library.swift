@@ -304,13 +304,18 @@ final class Library {
             }
             save(meta, "meta.json")
 
+            // séries déjà reconnues : refaites si des épisodes ont été ajoutés depuis (saisons en cache TMDB)
+            let newEpisodes = { (key: String, group: [VideoFile]) in
+                guard let m = self.meta[key], m.tmdbId != nil else { return false }
+                return group.contains { f in f.season.map { m.episodes?["\($0)-\(f.episode ?? 0)"] == nil } ?? false }
+            }
             let todo = movieGroups.filter { meta[$0.key] == nil }.map { ($0.key, $0.value, "movie") }
-                + showGroups.filter { meta[$0.key] == nil }.map { ($0.key, $0.value, "tv") }
+                + showGroups.filter { meta[$0.key] == nil || newEpisodes($0.key, $0.value) }.map { ($0.key, $0.value, "tv") }
             for (i, (key, group, kind)) in todo.enumerated() {
                 if Task.isCancelled { return }
                 status = "Recherche des affiches… \(i + 1) / \(todo.count)"
                 do {
-                    var id = settings.matches[key]
+                    var id = settings.matches[key] ?? meta[key]?.tmdbId
                     if id == nil {
                         id = kind == "movie" ? try await bestMovie(group) : try await bestShow(group)
                     }
@@ -487,6 +492,8 @@ final class Library {
                 eps["\(s)-\(n)"] = EpisodeMeta(title: ep["name"] as? String, overview: ep["overview"] as? String,
                                                still: still?.path, runtime: ep["runtime"] as? Int)
             }
+            // épisode inconnu de TMDB : fiche vide, pour ne pas refaire la série à chaque lancement
+            for k in episodes where k.hasPrefix("\(s)-") && eps[k] == nil { eps[k] = EpisodeMeta() }
         }
         m.episodes = eps
         return m
