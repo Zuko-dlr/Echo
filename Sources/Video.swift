@@ -158,6 +158,9 @@ enum Video {
         // Série : « Nom.S01E02 », « Nom 1x02 »
         if let m = match(sxxexxRE, name) ?? match(nxnnRE, name) {
             var show = clean(m[1] ?? "")
+            // rangé dans « Série/Saison N » : le dossier de la série l'emporte, pour réunir des versions
+            // nommées autrement (« Attack.on.Titan.S03E13 » à côté de « [Erai-raws] Shingeki no Kyojin - 01 »)
+            if seasonDir != nil, !genericDirs.contains(normalized(grand)) { show = clean(grand) }
             if show.count < 2 { show = clean(seasonDir != nil ? grand : parent) }
             return (show, nil, Int(m[2] ?? ""), Int(m[3] ?? ""))
         }
